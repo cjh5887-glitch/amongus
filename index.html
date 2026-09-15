@@ -211,13 +211,13 @@
      { "rules": { ".read": true, ".write": true } }
    ========================================================================= */
 const firebaseConfig = {
-  apiKey: "여기에_API_KEY_입력",
-  authDomain: "여기에_PROJECT_ID.firebaseapp.com",
-  databaseURL: "https://여기에_PROJECT_ID-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "여기에_PROJECT_ID",
-  storageBucket: "여기에_PROJECT_ID.appspot.com",
-  messagingSenderId: "여기에_SENDER_ID",
-  appId: "여기에_APP_ID"
+  apiKey: "AIzaSyA1uJwPj_1tCBJD8I5_CNBoIi_BKFRl8t0",
+  authDomain: "amongus-re.firebaseapp.com",
+  databaseURL: "https://amongus-re-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "amongus-re",
+  storageBucket: "amongus-re.firebasestorage.app",
+  messagingSenderId: "278604527639",
+  appId: "1:278604527639:web:b3d64320fbb2480c56c452",
 };
 /* ▲▲▲ 여기까지 교체 ▲▲▲ ========================================================= */
 
@@ -977,4 +977,74 @@ function renderAdminPlayerList(){
     adminPlayerList.innerHTML = '아직 참가한 학생이 없습니다.';
     return;
   }
-  adminPlayerList.innerHTML = i
+  adminPlayerList.innerHTML = ids.map(id => {
+    const p = playersCache[id];
+    const roleTag = stateCache.phase === 'playing' || stateCache.phase.includes('win')
+      ? (p.role === 'impostor' ? ' - 🕵️' : ' - 🧑‍🎓') : '';
+    return `<div class="adminPlayerRow">
+      <input type="checkbox" class="manualImpostorCheckbox" value="${id}" />
+      <label>${p.name || '(이름없음)'}${roleTag}</label>
+    </div>`;
+  }).join('');
+}
+
+startGameBtn.addEventListener('click', () => {
+  const ids = Object.keys(playersCache).filter(id => playersCache[id].connected !== false);
+  if(ids.length < 2){ alert('최소 2명 이상 참가해야 게임을 시작할 수 있어요.'); return; }
+
+  const countRadio = document.querySelector('input[name="impostorCount"]:checked');
+  let impostorCount = parseInt(countRadio ? countRadio.value : '1', 10);
+  impostorCount = Math.max(1, Math.min(impostorCount, 3, ids.length - 1));
+
+  const manualChecked = Array.from(document.querySelectorAll('.manualImpostorCheckbox:checked'))
+    .map(cb => cb.value).filter(id => ids.includes(id));
+
+  let impostors = [];
+  if(manualChecked.length > 0){
+    impostors = manualChecked.slice(0, impostorCount);
+    if(impostors.length < impostorCount){
+      const rest = shuffle(ids.filter(id => !impostors.includes(id)));
+      while(impostors.length < impostorCount && rest.length){ impostors.push(rest.shift()); }
+    }
+  } else {
+    impostors = shuffle(ids).slice(0, impostorCount);
+  }
+
+  const citizensCount = Math.max(1, ids.length - impostors.length);
+  const gaugeIncrement = Math.max(8, Math.floor(100 / (citizensCount * 3)));
+
+  const updates = {};
+  ids.forEach(id => {
+    const isImp = impostors.includes(id);
+    const spawn = randomSpawnPoint();
+    updates[`rooms/${ROOM_ID}/players/${id}/role`] = isImp ? 'impostor' : 'citizen';
+    updates[`rooms/${ROOM_ID}/players/${id}/frozen`] = false;
+    updates[`rooms/${ROOM_ID}/players/${id}/unfreezeUsed`] = 0;
+    updates[`rooms/${ROOM_ID}/players/${id}/missions`] = {};
+    updates[`rooms/${ROOM_ID}/players/${id}/x`] = spawn.x;
+    updates[`rooms/${ROOM_ID}/players/${id}/y`] = spawn.y;
+  });
+  updates[`rooms/${ROOM_ID}/state`] = {
+    phase: 'playing', gauge: 0, maxGauge: 100, gaugeIncrement, impostorCount
+  };
+
+  db.ref().update(updates).then(() => {
+    alert(`게임을 시작했습니다! (임포스터 ${impostors.length}명)`);
+  });
+});
+
+resetGameBtn.addEventListener('click', () => {
+  const ids = Object.keys(playersCache);
+  const updates = {};
+  ids.forEach(id => {
+    updates[`rooms/${ROOM_ID}/players/${id}/role`] = 'citizen';
+    updates[`rooms/${ROOM_ID}/players/${id}/frozen`] = false;
+    updates[`rooms/${ROOM_ID}/players/${id}/unfreezeUsed`] = 0;
+    updates[`rooms/${ROOM_ID}/players/${id}/missions`] = {};
+  });
+  updates[`rooms/${ROOM_ID}/state`] = { phase:'lobby', gauge:0, maxGauge:100, gaugeIncrement:10 };
+  db.ref().update(updates);
+});
+</script>
+</body>
+</html>
