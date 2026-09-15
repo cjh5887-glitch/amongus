@@ -197,13 +197,13 @@
      { "rules": { ".read": true, ".write": true } }
    ========================================================================= */
 const firebaseConfig = {
-  apiKey: "AIzaSyA1uJwPj_1tCBJD8I5_CNBoIi_BKFRl8t0",
-  authDomain: "amongus-re.firebaseapp.com",
-  databaseURL: "https://amongus-re-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "amongus-re",
-  storageBucket: "amongus-re.firebasestorage.app",
-  messagingSenderId: "278604527639",
-  appId: "1:278604527639:web:b3d64320fbb2480c56c452",
+  apiKey: "여기에_API_KEY_입력",
+  authDomain: "여기에_PROJECT_ID.firebaseapp.com",
+  databaseURL: "https://여기에_PROJECT_ID-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "여기에_PROJECT_ID",
+  storageBucket: "여기에_PROJECT_ID.appspot.com",
+  messagingSenderId: "여기에_SENDER_ID",
+  appId: "여기에_APP_ID"
 };
 /* ▲▲▲ 여기까지 교체 ▲▲▲ ========================================================= */
 
@@ -237,34 +237,41 @@ penguinImage.src = 'images/penguin.png';
 const frozenImage = new Image();
 frozenImage.src = 'images/penguin_frozen.png';
 
+// 걷기 애니메이션 스프라이트 시트 (가로로 8프레임, 발 위치가 조금씩 다름 → 실제 걷는 느낌)
+const walkImage = new Image();
+walkImage.src = 'images/penguin_walk.png';
+const WALK_FRAME_COUNT = 8;
+const WALK_FRAME_SIZE = 160;
+
 const MISSION_POINTS = [
-  { id:'m1', x:330,  y:230,  label:'🔬 과학실' },
-  { id:'m2', x:1670, y:230,  label:'📚 도서관' },
-  { id:'m3', x:330,  y:615,  label:'🍽️ 급식실' },
-  { id:'m4', x:1670, y:615,  label:'⚽ 체육관' },
-  { id:'m5', x:1670, y:1085, label:'🎨 미술실' }
+  { id:'m1', x:300,  y:245,  label:'🔬 과학실' },
+  { id:'m2', x:1680, y:275,  label:'📚 도서관' },
+  { id:'m3', x:300,  y:690,  label:'🍽️ 급식실' },
+  { id:'m4', x:1680, y:715,  label:'⚽ 체육관' },
+  { id:'m5', x:1680, y:1165, label:'🎨 미술실' }
 ];
 
-/* 이동 가능한 구역(방 내부 + 복도)을 사각형으로 대략 지정한 목록입니다.
-   배경 이미지의 방/복도 위치에 맞춰 눈대중으로 잡은 값이라 정확하지 않을 수 있어요.
-   캐릭터가 벽을 뚫고 다니거나, 반대로 갈 수 있어야 할 곳을 못 간다면
+/* 이동 가능한 구역(방 내부 + 복도)을 사각형으로 지정한 목록입니다.
+   배경 이미지(background.jpg, 2000x1500)를 100px 격자로 나눠서 실제 벽/문 위치를
+   픽셀 단위로 하나하나 확인하고 좌표를 맞춘 값입니다.
+   그래도 캐릭터가 벽을 뚫고 다니거나 못 가야 할 곳을 갈 수 있다면
    게임 화면에서 'G' 키를 눌러 좌표 격자를 켠 뒤(초록색 = 이동 가능 구역) 아래 숫자를 직접 수정하세요. */
 const WALKABLE_RECTS = [
-  // 왼쪽 세로줄 방들
-  { x1:60,   y1:60,   x2:600,  y2:410 },   // 과학실
-  { x1:60,   y1:450,  x2:600,  y2:800 },   // 급식실
-  { x1:60,   y1:830,  x2:600,  y2:1350 },  // 컴퓨터실
-  // 오른쪽 세로줄 방들
-  { x1:1400, y1:60,   x2:1940, y2:410 },   // 도서관
-  { x1:1400, y1:450,  x2:1940, y2:800 },   // 체육관
-  { x1:1400, y1:830,  x2:1940, y2:1350 },  // 미술실
-  // 가운데 방들
-  { x1:680,  y1:225,  x2:1300, y2:640 },   // 교실
-  { x1:680,  y1:1050, x2:1300, y2:1360 },  // 교무실/상담실
-  // 복도(방과 방을 이어주는 통로 = 사실상 '문' 역할)
-  { x1:600,  y1:60,   x2:1400, y2:1440 },  // 세로 중앙 복도
-  { x1:60,   y1:400,  x2:1940, y2:500 },   // 위쪽 가로 복도
-  { x1:60,   y1:1010, x2:1940, y2:1120 }   // 아래쪽 가로 복도
+  // 방 내부 (8개)
+  { x1:30,   y1:90,   x2:575,  y2:400  },  // 과학실
+  { x1:30,   y1:495,  x2:575,  y2:880  },  // 급식실
+  { x1:30,   y1:995,  x2:580,  y2:1340 }, // 컴퓨터실
+  { x1:755,  y1:305,  x2:1215, y2:790  },  // 교실
+  { x1:755,  y1:995,  x2:1215, y2:1340 },  // 교무실/상담실
+  { x1:1420, y1:90,   x2:1940, y2:460  },  // 도서관
+  { x1:1420, y1:495,  x2:1940, y2:940  },  // 체육관
+  { x1:1420, y1:995,  x2:1940, y2:1340 },  // 미술실
+  // 복도 (방과 방을 이어주는 통로)
+  { x1:20,   y1:20,   x2:1980, y2:300  },  // 위쪽 가로 복도
+  { x1:20,   y1:860,  x2:1980, y2:1000 },  // 아래쪽 가로 복도
+  { x1:600,  y1:20,   x2:1400, y2:1470 },  // 중앙 세로 복도
+  { x1:560,  y1:20,   x2:660,  y2:1470 },  // 왼쪽 방들을 잇는 세로 복도
+  { x1:1340, y1:20,   x2:1440, y2:1470 }   // 오른쪽 방들을 잇는 세로 복도
 ];
 
 function isWalkable(x, y){
@@ -274,7 +281,7 @@ function isWalkable(x, y){
 
 // 교실 안쪽 지점 - 학생들이 게임에 참가하거나 게임이 시작될 때 여기서 스폰됩니다.
 function randomSpawnPoint(){
-  return { x: randInt(760, 1220), y: randInt(280, 580) };
+  return { x: randInt(800, 1170), y: randInt(360, 740) };
 }
 
 /* ============================ 유틸 함수 ============================ */
@@ -746,6 +753,25 @@ function updatePromptText(){
   promptText.style.display = 'none';
 }
 
+// 각 플레이어의 걷기 애니메이션 상태(이동 방향/통통 튀는 위상)를 프레임마다 계산
+const animState = {};
+function updateAnim(id, wx, wy){
+  let a = animState[id];
+  if(!a){ a = { lastX: wx, lastY: wy, facing: 1, phase: 0, moving: false }; animState[id] = a; }
+
+  const dx = wx - a.lastX, dy = wy - a.lastY;
+  const dist2 = dx*dx + dy*dy;
+  a.moving = dist2 > 0.05;
+  if(dx > 0.4) a.facing = 1;
+  else if(dx < -0.4) a.facing = -1;
+
+  if(a.moving) a.phase += 0.22;
+  else a.phase = 0;
+
+  a.lastX = wx; a.lastY = wy;
+  return a;
+}
+
 function draw(){
   ctx.clearRect(0,0,VIEW_W,VIEW_H);
 
@@ -811,19 +837,17 @@ function draw(){
     const px = wx - camera.x, py = wy - camera.y;
     if(px < -40 || px > VIEW_W+40 || py < -40 || py > VIEW_H+40) continue;
 
+    const anim = updateAnim(id, wx, wy);
+    const spriteSize = PLAYER_R * 2.6;
+
+    // 발밑 그림자 (캐릭터가 바닥에 붙어있는 느낌)
     ctx.beginPath();
-    ctx.arc(px, py, PLAYER_R, 0, Math.PI*2);
-    ctx.fillStyle = p.color || '#999';
+    ctx.ellipse(px, py + spriteSize*0.36, spriteSize*0.32, spriteSize*0.11, 0, 0, Math.PI*2);
+    ctx.fillStyle = 'rgba(0,0,0,0.22)';
     ctx.fill();
 
-    if(gameEnded && p.role === 'impostor'){
-      ctx.lineWidth = 4; ctx.strokeStyle = '#c1121f'; ctx.stroke();
-    } else {
-      ctx.lineWidth = 3; ctx.strokeStyle = isMe ? '#333' : '#fff'; ctx.stroke();
-    }
-
-    const spriteSize = PLAYER_R * 2.3;
     if(p.frozen){
+      // 얼음 상태는 고정된 얼음 큐브 이미지로 표시
       if(frozenImage.complete && frozenImage.naturalWidth > 0){
         ctx.drawImage(frozenImage, px-spriteSize/2, py-spriteSize/2, spriteSize, spriteSize);
       } else {
@@ -835,14 +859,37 @@ function draw(){
         ctx.textAlign='center'; ctx.textBaseline='middle';
         ctx.fillText('❄️', px, py-2);
       }
-    } else if(penguinImage.complete && penguinImage.naturalWidth > 0){
-      ctx.drawImage(penguinImage, px-spriteSize/2, py-spriteSize/2, spriteSize, spriteSize);
+    } else {
+      // 걷는 느낌: 8프레임 걷기 스프라이트를 순서대로 재생 + 이동 방향에 따라 좌우 반전
+      const useWalk = walkImage.complete && walkImage.naturalWidth > 0;
+      const frameIdx = anim.moving ? Math.floor(anim.phase) % WALK_FRAME_COUNT : 0;
+      const bob = anim.moving ? Math.abs(Math.sin(anim.phase)) * 2 : 0;
+      ctx.save();
+      ctx.translate(px, py - bob);
+      ctx.scale(anim.facing, 1);
+      if(useWalk){
+        ctx.drawImage(walkImage, frameIdx*WALK_FRAME_SIZE, 0, WALK_FRAME_SIZE, WALK_FRAME_SIZE,
+                       -spriteSize/2, -spriteSize/2, spriteSize, spriteSize);
+      } else if(penguinImage.complete && penguinImage.naturalWidth > 0){
+        ctx.drawImage(penguinImage, -spriteSize/2, -spriteSize/2, spriteSize, spriteSize);
+      }
+      ctx.restore();
     }
+
+    // 머리 위 작은 색 배지 (학생 구분용 / 게임종료 시 임포스터는 빨간색)
+    const badgeY = py - spriteSize/2 - 10;
+    ctx.beginPath();
+    ctx.arc(px, badgeY, 7, 0, Math.PI*2);
+    ctx.fillStyle = (gameEnded && p.role === 'impostor') ? '#c1121f' : (p.color || '#999');
+    ctx.fill();
+    ctx.lineWidth = isMe ? 2.5 : 1.5;
+    ctx.strokeStyle = isMe ? '#333' : '#fff';
+    ctx.stroke();
 
     ctx.font = 'bold 12px sans-serif';
     ctx.fillStyle = '#222';
     ctx.textAlign = 'center';
-    ctx.fillText((p.name||'') + (isMe ? ' (나)' : ''), px, py - PLAYER_R - 8);
+    ctx.fillText((p.name||'') + (isMe ? ' (나)' : ''), px, badgeY - 12);
   }
 }
 
