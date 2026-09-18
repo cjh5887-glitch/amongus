@@ -1,0 +1,1635 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>정전 학교 미션 작전 — 소수 탐정단</title>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root{--ice-0:#F2F8FF;--ice-1:#DDEBF7;--ice-2:#C3DDF0;--deep:#0E3552;--mid:#4A7A9B;
+--beak:#FF8C42;--beak-d:#E8712A;--alert:#E2456A;--ok:#2FB380;--snow:#fff;--lamp:#FFD84D}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;height:100%;overscroll-behavior:none}
+body{font-family:'Gowun Dodum',system-ui,sans-serif;background:var(--ice-0);color:var(--deep);line-height:1.6}
+.wrap{max-width:520px;margin:0 auto;padding:18px 16px 60px}
+h1,h3,.jua{font-family:'Jua',sans-serif;font-weight:400}
+h1{font-size:32px;margin:0 0 4px;line-height:1.2}h3{font-size:17px;margin:0 0 6px}
+p{margin:0 0 10px}.sub{color:var(--mid);font-size:14px}
+.card{background:var(--snow);border:2px solid var(--ice-2);border-radius:18px;padding:16px;margin-bottom:14px}
+.card.flat{background:var(--ice-1);border-color:transparent}
+button{font-family:'Jua',sans-serif;font-size:17px;border:none;border-radius:14px;padding:14px 18px;cursor:pointer;transition:transform .08s}
+button:active{transform:translateY(2px)}button:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.btn-main{background:var(--beak);color:#fff;box-shadow:0 4px 0 var(--beak-d);width:100%}
+.btn-sub{background:var(--ice-1);color:var(--deep);width:100%}
+.row{display:flex;gap:10px}.row>*{flex:1}
+input{font-family:'Gowun Dodum',sans-serif;font-size:18px;width:100%;padding:13px 14px;border:2px solid var(--ice-2);border-radius:14px;background:var(--snow);color:var(--deep)}
+input:focus{outline:none;border-color:#8FD0EE}
+label{display:block;font-size:14px;color:var(--mid);margin:0 0 6px 2px}.field{margin-bottom:12px}
+.codebox{background:var(--deep);color:#fff;border-radius:22px;padding:18px;text-align:center;margin-bottom:14px}
+.codebox .code{font-family:'Jua',sans-serif;font-size:46px;letter-spacing:.16em;line-height:1.1}
+.codebox .sub{color:#9FC6DE}
+.peng{width:40px;height:40px;flex:none;-webkit-mask-size:200px 150px;mask-size:200px 150px;
+-webkit-mask-position:0 0;mask-position:0 0;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
+.plist{display:flex;flex-direction:column;gap:8px}
+.pitem{display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--ice-1);border-radius:14px}
+.pitem .nm{font-family:'Jua',sans-serif;font-size:16px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tag{font-size:12px;padding:3px 9px;border-radius:999px;background:var(--ice-2);color:var(--deep);flex:none}
+.tag.me{background:var(--beak);color:#fff}.tag.host{background:var(--deep);color:#fff}
+.linkrow{background:var(--ice-1);border-radius:12px;padding:11px 13px;font-size:13px;color:var(--mid);word-break:break-all}
+.seg{display:flex;gap:6px;background:var(--ice-1);padding:5px;border-radius:14px}
+.seg button{flex:1;background:transparent;color:var(--mid);font-size:15px;padding:9px 0;border-radius:10px}
+.seg button.on{background:var(--snow);color:var(--deep);box-shadow:0 1px 4px rgba(14,53,82,.14)}
+.pitem.pick{cursor:pointer}.pitem.picked{background:#FFE6D6;box-shadow:inset 0 0 0 2px var(--beak)}
+#qrbox canvas,#qrbox img{border-radius:12px;border:6px solid #fff}
+.rolecard{border-radius:20px;padding:20px;text-align:center;color:#fff;margin-bottom:14px}
+.rolecard.crew{background:linear-gradient(160deg,#2C7FB8,#14486B)}
+.rolecard.imp{background:linear-gradient(160deg,#B3305A,#5E1330)}
+.rolecard .big{font-family:'Jua',sans-serif;font-size:30px;line-height:1.2}
+.rolecard .msg{font-size:14px;opacity:.92;margin-top:6px}
+.timer{font-family:'Jua',sans-serif;font-size:26px;text-align:center}
+.toast{position:fixed;left:50%;bottom:165px;transform:translateX(-50%);background:var(--deep);color:#fff;
+padding:12px 18px;border-radius:999px;font-family:'Jua',sans-serif;font-size:15px;z-index:99;max-width:90%;text-align:center}
+.hide{display:none!important}.center{text-align:center}
+.help summary{font-family:'Jua',sans-serif;cursor:pointer;color:var(--mid);font-size:15px}
+.help{margin-top:22px}code{background:var(--ice-1);padding:1px 5px;border-radius:5px;font-size:13px}
+#s-game{position:fixed;inset:0;overflow:hidden;background:#06131C}
+#viewport{position:absolute;inset:0;overflow:hidden}
+#world{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform}
+#mapcv{position:absolute;left:0;top:0;image-rendering:pixelated}
+.zlabel{position:absolute;font-family:'Jua',sans-serif;color:#173A52;
+transform:translate(-50%,-50%);white-space:nowrap;pointer-events:none;text-shadow:0 1px 0 rgba(255,255,255,.8);
+background:rgba(245,250,255,.86);border:1px solid rgba(90,130,155,.28);border-radius:999px;padding:4px 11px;
+box-shadow:0 2px 8px rgba(5,20,30,.12);z-index:4}
+.prop{position:absolute;image-rendering:pixelated;background-repeat:no-repeat;pointer-events:none;z-index:2}
+.prop.decor{filter:brightness(.82) saturate(.85);opacity:.95}
+.prop.onwall{filter:brightness(.92) saturate(.9) drop-shadow(0 3px 3px rgba(0,0,0,.45))}
+.station{position:absolute;width:104px;height:104px;margin:-52px 0 0 -52px;
+background-image:url('images/mission-objects.png');background-repeat:no-repeat;
+background-size:416px 520px;image-rendering:pixelated;transition:filter .35s}
+.station.on{animation:pulse 1.7s infinite}
+@keyframes pulse{0%,100%{filter:drop-shadow(0 0 10px rgba(255,90,90,.75))}
+50%{filter:drop-shadow(0 0 26px rgba(255,120,120,1))}}
+.station.work{animation:none;filter:drop-shadow(0 0 20px rgba(90,170,255,.9))}
+.station.lit{animation:none;filter:drop-shadow(0 0 28px rgba(90,255,140,.95)) drop-shadow(0 0 70px rgba(120,255,160,.6))}
+.station.off{opacity:.22;filter:grayscale(1)}
+.stnum{position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);font-family:'Jua',sans-serif;
+font-size:13px;color:#0E3552;background:rgba(255,255,255,.92);padding:0 8px;border-radius:999px;white-space:nowrap}
+.pg{position:absolute;width:76px;height:80px;margin:-70px 0 0 -38px;will-change:transform}
+.pg .ring{position:absolute;left:18px;top:62px;width:40px;height:12px;border-radius:50%;
+background:rgba(0,0,0,.28);box-shadow:0 0 0 3px var(--c)}
+.pg .body{position:absolute;left:0;top:0;width:76px;height:76px}
+.pg .tint,.pg .ink{position:absolute;inset:0;background-repeat:no-repeat;
+background-size:304px 228px;image-rendering:pixelated}
+.pg .tint{background-color:var(--c);-webkit-mask-image:url('images/penguin-mask.png');
+mask-image:url('images/penguin-mask.png');-webkit-mask-size:304px 228px;mask-size:304px 228px;
+-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
+.pg .ink{background-image:url('images/penguin-sheet.png')}
+.pg.imp .tint{display:block}.pg.imp .ink{background-image:url('images/penguin-sheet.png')}
+.pg.ghost .tint{display:none}.pg.ghost .ring{display:none}
+.pg.ghost .ink{background-image:url('images/ghost-sheet.png');opacity:.85}
+.pg.bodymark .ring{display:none}
+.pg.frozen .tint{display:none}
+.pg.frozen .ink{background-image:url('images/frozen.png');background-size:304px 76px}
+.pg.me .ring{box-shadow:0 0 0 3px var(--c),0 0 0 7px rgba(255,255,255,.6)}
+#vision{position:absolute;inset:0;z-index:6;pointer-events:none}
+#hud{position:absolute;left:0;right:0;top:0;padding:10px 12px;z-index:10;pointer-events:none;
+background:linear-gradient(rgba(6,19,28,.85),rgba(6,19,28,0))}
+#hud .line{display:flex;align-items:center;gap:8px;margin-bottom:6px;color:#fff}
+.chip{font-family:'Jua',sans-serif;font-size:13px;padding:4px 11px;border-radius:999px;background:rgba(255,255,255,.18);color:#fff}
+.chip.crew{background:#2C7FB8}.chip.imp{background:#C03462}
+#v-place{font-family:'Jua',sans-serif;font-size:17px;color:#fff}
+#v-gametimer{font-family:'Jua',sans-serif;font-size:15px;color:#BFE0F2;margin-left:auto}
+.bar{height:10px;background:rgba(255,255,255,.22);border-radius:999px;overflow:hidden}
+.bar>i{display:block;height:100%;background:var(--lamp);width:0;transition:width .5s}
+#warn{margin-top:6px;font-family:'Jua',sans-serif;font-size:14px;color:#FFD3DE;
+background:rgba(194,40,80,.6);border-radius:10px;padding:4px 10px;display:inline-block}
+#missions{position:absolute;left:12px;top:88px;z-index:10;max-width:54%;
+background:rgba(6,19,28,.62);border-radius:14px;padding:9px 11px;color:#fff;font-size:12.5px}
+#missions h4{font-family:'Jua',sans-serif;font-size:13px;margin:0 0 5px;color:#BFE0F2;font-weight:400}
+#missions .m.ok{color:var(--lamp)}
+#guide{position:absolute;z-index:9;font-size:30px;pointer-events:none;text-shadow:0 2px 10px rgba(0,0,0,.7)}
+#pad{position:absolute;left:18px;bottom:24px;width:136px;height:136px;border-radius:50%;
+background:rgba(255,255,255,.2);border:3px solid rgba(255,255,255,.4);touch-action:none;z-index:12}
+#knob{position:absolute;left:50%;top:50%;width:60px;height:60px;margin:-30px 0 0 -30px;border-radius:50%;
+background:rgba(255,255,255,.93);box-shadow:0 3px 10px rgba(0,0,0,.4)}
+#acts{position:absolute;right:16px;bottom:24px;display:flex;flex-direction:column;gap:10px;align-items:flex-end;z-index:12}
+.abtn{width:86px;height:86px;border-radius:50%;font-family:'Jua',sans-serif;font-size:15px;color:#fff;
+background:rgba(18,48,72,.93);box-shadow:0 4px 0 rgba(0,0,0,.35);line-height:1.15;padding:0}
+.abtn.task{background:var(--beak);box-shadow:0 4px 0 var(--beak-d)}
+.abtn.kill{background:var(--alert);box-shadow:0 4px 0 #b52f51}
+.abtn.sab{background:#7A3FA8;box-shadow:0 4px 0 #56277A}
+.abtn.transform{background:#168A9A;box-shadow:0 4px 0 #0B5A66}
+.abtn.small{width:64px;height:64px;font-size:13px}.abtn:disabled{opacity:.3}
+#rolepop{position:absolute;inset:0;z-index:30;display:flex;align-items:center;justify-content:center;
+background:rgba(5,16,25,.9);padding:26px;text-align:center;color:#fff}
+#rolepop .big{font-family:'Jua',sans-serif;font-size:40px;line-height:1.15}
+#rolepop .msg{font-size:15px;opacity:.9;margin-top:8px}
+#rolepop .mates{margin-top:14px;font-size:14px;color:#FFB3C8}
+#rolepop .tapin{margin-top:22px;font-size:13px;opacity:.6}
+/* 얼리기 당한 사람에게만 잠깐 보이는 방해꾼 연출 */
+#freeze-reveal{position:absolute;inset:0;z-index:45;display:flex;align-items:center;justify-content:center;
+background:radial-gradient(circle at 50% 45%,rgba(20,78,112,.35),rgba(3,12,20,.94) 68%);padding:24px;pointer-events:none}
+#freeze-reveal .freeze-card{min-width:270px;max-width:340px;text-align:center;color:#fff;
+background:rgba(8,24,36,.92);border:3px solid #79D9FF;border-radius:24px;padding:20px 18px 18px;
+box-shadow:0 0 34px rgba(78,198,255,.55),inset 0 0 24px rgba(92,210,255,.12);animation:freezeRevealPop .32s ease-out}
+#freeze-reveal .freeze-imp{width:152px;height:152px;margin:0 auto 6px;background-image:url('images/imposter-sheet.png');
+background-repeat:no-repeat;background-size:608px 456px;background-position:0 0;image-rendering:pixelated;
+filter:drop-shadow(0 0 18px rgba(255,55,90,.9))}
+#freeze-reveal .freeze-title{font-family:'Jua',sans-serif;font-size:30px;line-height:1.15;color:#DDF8FF;text-shadow:0 3px 0 #14506F}
+#freeze-reveal .freeze-sub{font-family:'Jua',sans-serif;font-size:16px;color:#9DE9FF;margin-top:8px}
+@keyframes freezeRevealPop{0%{transform:scale(.55);opacity:0}75%{transform:scale(1.06);opacity:1}100%{transform:scale(1);opacity:1}}
+#quizpanel,#sabpanel{position:absolute;left:0;right:0;bottom:0;z-index:20;border-radius:24px 24px 0 0;padding:18px 16px 24px}
+#quizpanel{background:var(--snow);box-shadow:0 -8px 30px rgba(0,0,0,.45)}
+#sabpanel{background:#2B1440;color:#fff}#sabpanel h3{color:#fff}
+.sabbtn{display:flex;align-items:center;gap:12px;width:100%;background:rgba(255,255,255,.12);color:#fff;
+font-family:'Jua',sans-serif;font-size:16px;text-align:left;padding:13px 15px;border-radius:14px;margin-bottom:9px}
+.sabbtn small{font-family:'Gowun Dodum',sans-serif;font-size:12px;opacity:.75;display:block;margin-top:1px}
+.quiz{font-family:'Jua',sans-serif;font-size:38px;text-align:center;padding:6px 0 12px}
+.fb{text-align:center;font-family:'Jua',sans-serif;font-size:17px;min-height:24px}
+.fb.good{color:var(--ok)}.fb.bad{color:var(--alert)}
+.qdots{text-align:center;font-family:'Jua',sans-serif;font-size:15px;color:var(--mid)}
+/* 전체 지도 오버레이 — M 키로 열고 닫기 */
+#mapoverlay{position:absolute;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;
+background:rgba(2,10,17,.92);padding:18px;backdrop-filter:blur(3px)}
+#mapoverlay .mapbox{width:min(94vw,940px);max-height:94vh;background:#0A2131;border:3px solid #8FD0EE;
+border-radius:22px;padding:14px 14px 10px;box-shadow:0 0 34px rgba(87,196,244,.28)}
+#mapoverlay .maphead{display:flex;align-items:center;justify-content:space-between;gap:10px;color:#fff;
+font-family:'Jua',sans-serif;font-size:24px;margin:0 3px 9px}
+#mapoverlay .maphead small{font-family:'Gowun Dodum',sans-serif;font-size:13px;color:#9FC6DE;font-weight:400}
+#mapoverview{display:block;width:100%;height:auto;max-height:78vh;background:#06131C;border-radius:14px;
+image-rendering:pixelated;border:1px solid rgba(143,208,238,.35)}
+#mapoverlay .maplegend{display:flex;justify-content:center;gap:16px;flex-wrap:wrap;margin-top:8px;
+font-size:13px;color:#BFE0F2}
+.mapkbd{position:absolute;right:14px;top:88px;z-index:13;padding:5px 10px;border-radius:10px;
+background:rgba(6,19,28,.65);color:#BFE0F2;font-family:'Jua',sans-serif;font-size:12px;pointer-events:none}
+
+/* ═══ 입장 화면 (픽셀 UI) ═══ */
+#s-home{padding-top:4px;position:relative}
+body.night{background:#0A1828}
+body.night::before{content:"";position:fixed;inset:0;z-index:-1;
+  background:radial-gradient(120% 80% at 50% 0%, #1B3350 0%, #122740 45%, #0A1828 100%)}
+body.night::after{content:"";position:fixed;inset:0;z-index:-1;opacity:.5;
+  background:
+   radial-gradient(2px 2px at 12% 14%, #cfe6ff 50%, transparent 51%),
+   radial-gradient(2px 2px at 78% 9%,  #cfe6ff 50%, transparent 51%),
+   radial-gradient(2px 2px at 34% 26%, #9fc8ea 50%, transparent 51%),
+   radial-gradient(2px 2px at 63% 33%, #cfe6ff 50%, transparent 51%),
+   radial-gradient(2px 2px at 89% 24%, #9fc8ea 50%, transparent 51%),
+   radial-gradient(2px 2px at 22% 41%, #9fc8ea 50%, transparent 51%)}
+.home-logo{display:block;width:min(100%,430px);margin:6px auto 2px;image-rendering:pixelated}
+.home-tag{text-align:center;font-family:'Jua',sans-serif;font-size:17px;line-height:1.5;
+  color:#BFE0F2;margin:0 0 18px;text-shadow:0 2px 0 rgba(0,0,0,.55)}
+
+/* 패널 — 9조각 늘이기 */
+.ui-panel{position:relative;margin:0 0 16px;padding:26px 22px 22px;
+  border-image:url('images/ui-panel.png') 46 fill / 46px / 0 stretch;
+  image-rendering:pixelated}
+.ui-panel.teacher{padding-top:18px;text-align:center}
+
+/* 리본 제목 */
+.ui-ribbon{position:absolute;left:50%;top:-20px;transform:translateX(-50%);
+  min-width:190px;height:52px;line-height:50px;text-align:center;
+  font-family:'Jua',sans-serif;font-size:21px;color:#5A3208;
+  text-shadow:0 1px 0 rgba(255,255,255,.55);
+  background:url('images/ui-ribbon.png') center/100% 100% no-repeat;
+  image-rendering:pixelated;padding:0 26px;white-space:nowrap}
+
+.ui-label{display:block;font-family:'Jua',sans-serif;font-size:17px;
+  color:#22445E;margin:14px 0 7px 4px}
+.ui-panel .sub{text-align:center;color:#C0611A;font-family:'Jua',sans-serif;
+  font-size:15px;margin:0 0 4px}
+
+/* 입력칸 */
+.ui-inputwrap{position:relative;height:56px;
+  border-image:url('images/ui-input.png') 30 fill / 30px / 0 stretch;
+  image-rendering:pixelated}
+.ui-inputwrap input{position:absolute;inset:0;width:100%;height:100%;
+  background:transparent;border:none;outline:none;box-sizing:border-box;
+  font-family:'Jua',sans-serif;font-size:21px;color:#16334A;
+  padding:0 32px;letter-spacing:.01em}
+.ui-inputwrap input::placeholder{color:#8FA9BC;font-size:18px}
+.ui-inputwrap.pin input{text-align:center;letter-spacing:.34em}
+
+/* 버튼 */
+.ui-btn{display:block;width:100%;height:62px;margin-top:16px;
+  background:none;border:none;padding:0 0 4px;
+  font-family:'Jua',sans-serif;font-size:23px;cursor:pointer;
+  image-rendering:pixelated;transition:transform .07s}
+.ui-btn.orange{border-image:url('images/ui-btn-orange.png') 34 fill / 34px / 0 stretch;
+  color:#fff;text-shadow:0 2px 0 rgba(140,60,0,.75)}
+.ui-btn.gray{border-image:url('images/ui-btn-gray.png') 34 fill / 34px / 0 stretch;
+  color:#1E3A52;text-shadow:0 1px 0 rgba(255,255,255,.45)}
+.ui-btn:active{transform:translateY(3px)}
+.ui-btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
+
+.ui-divider{text-align:center;margin:2px 0 14px}
+.ui-divider img{width:170px;image-rendering:pixelated;opacity:.85}
+.ui-school{display:block;width:104px;margin:0 auto 4px;image-rendering:pixelated}
+.ui-q{font-family:'Jua',sans-serif;font-size:18px;color:#22445E;margin:0 0 4px}
+.ui-msg{font-family:'Jua',sans-serif;font-size:15px;color:#C0392B;margin:10px 0 0;min-height:20px}
+.home-peng{display:block;width:96px;margin:20px auto 0;image-rendering:pixelated;
+  filter:drop-shadow(0 4px 6px rgba(0,0,0,.5))}
+#pinbox{margin-top:14px}
+#b-qr{white-space:nowrap;padding-left:10px;padding-right:10px}
+#s-home .help{background:rgba(10,24,40,.55);border:2px solid rgba(150,195,230,.35);
+  border-radius:14px;padding:12px 14px;margin:4px 0 0}
+#s-home .help summary{color:#CFE6FF;font-size:17px}
+#s-home .help .card{background:rgba(18,39,64,.7);border-color:rgba(150,195,230,.28);
+  border-radius:12px;padding:14px}
+#s-home .help p{color:#C8DEF0;font-size:15.5px;line-height:1.75;margin:0 0 12px}
+#s-home .help p:last-child{margin:0}
+#s-home .help b{color:#FFCE7A}
+
+/* 작은 화면 대응 */
+@media (max-width:380px){
+  .home-tag{font-size:15px}
+  .ui-btn{height:56px;font-size:20px}
+  .ui-inputwrap{height:52px}
+  .ui-inputwrap input{font-size:19px}
+}
+
+/* ═══ 대기실 (픽셀 UI) ═══ */
+.lb-header{position:relative;width:100%;aspect-ratio:905/312;margin:0 0 20px;
+  background:url('images/ui-header.png') center/100% 100% no-repeat;
+  image-rendering:pixelated;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;padding:17% 19% 12%;box-sizing:border-box;min-height:168px}
+.lb-cap{font-family:'Jua',sans-serif;font-size:14px;color:#9EC4E4;margin-bottom:-4px}
+.lb-code{font-family:'Jua',sans-serif;font-size:clamp(34px,10.5vw,48px);color:#fff;
+  letter-spacing:.14em;line-height:1.1;text-shadow:0 3px 0 rgba(0,0,0,.45)}
+.lb-cnt{font-family:'Jua',sans-serif;font-size:14px;color:#BFE0F2;margin-top:-2px}
+
+.ui-panel.lb{padding:30px 22px 48px;margin-bottom:22px}
+.ui-panel.lb .ui-label:first-of-type{margin-top:4px}
+.lb-row2{display:flex;gap:10px;align-items:flex-start}
+.lb-row2 .ui-btn{margin-top:14px}
+.lb-row2 .ui-btn.orange{flex:1}
+.ui-btn.light{flex:0 0 108px;
+  border-image:url('images/ui-btn-light.png') 34 fill / 26px / 0 stretch;
+  color:#1E3A52;text-shadow:0 1px 0 rgba(255,255,255,.5);font-size:18px}
+.ui-btn.qr{display:flex;align-items:center;justify-content:center;gap:5px}
+.ui-btn.qr img{width:26px;image-rendering:pixelated}
+.ui-btn.big{height:70px;font-size:26px}
+
+.ui-inputwrap.link{height:auto;min-height:56px;display:flex;align-items:center;
+  padding:15px 26px;box-sizing:border-box}
+.ui-inputwrap.link span{font-size:13.5px;color:#2C526E;word-break:break-all;
+  font-family:'Gowun Dodum',sans-serif;line-height:1.5}
+.ui-inputwrap.sm{height:52px}
+.ui-inputwrap.sm input{font-size:20px;padding:0 18px;text-align:center}
+.numgrid{display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;margin-bottom:6px}
+
+/* 참가자 줄 */
+#s-lobby .plist{gap:10px;margin-top:6px}
+#s-lobby .pitem{background:none;border-radius:0;padding:10px 16px;gap:10px;
+  border-image:url('images/ui-row.png') 34 fill / 24px / 0 stretch;
+  image-rendering:pixelated;min-height:60px;box-sizing:border-box}
+#s-lobby .pitem .nm{font-size:18px;color:#16334A}
+#s-lobby .tag{font-family:'Jua',sans-serif;font-size:13.5px;background:none;
+  border-radius:0;padding:0 8px;min-width:54px;height:34px;line-height:34px;
+  text-align:center;image-rendering:pixelated;box-shadow:none;box-sizing:border-box}
+#s-lobby .tag.host{color:#E3EFFA;
+  border-image:url('images/ui-pill-navy.png') 30 fill / 17px / 0 stretch}
+#s-lobby .tag.me{color:#fff;text-shadow:0 1px 0 rgba(140,60,0,.6);
+  border-image:url('images/ui-pill-orange.png') 30 fill / 17px / 0 stretch}
+#s-lobby .pitem.picked{background:none;box-shadow:none;
+  border-image:url('images/ui-pill-orange.png') 30 fill / 22px / 0 stretch}
+#s-lobby .pitem.picked .nm{color:#fff;text-shadow:0 1px 0 rgba(140,60,0,.6)}
+
+/* 선택 막대 */
+#s-lobby .seg{background:#31567A;gap:4px;padding:6px;margin-bottom:18px;
+  border:3px solid #17344F;border-radius:999px;box-shadow:inset 0 3px 0 rgba(255,255,255,.12);
+  height:58px;box-sizing:border-box;align-items:center}
+#s-lobby .seg button{font-family:'Jua',sans-serif;font-size:17px;color:#E4F0FA;
+  text-shadow:0 1px 0 rgba(15,38,60,.6);padding:0;height:40px;border-radius:999px;background:none}
+#s-lobby .seg button.on{color:#16334A;text-shadow:none;background:#EDF5FC;
+  box-shadow:inset 0 -3px 0 rgba(120,160,195,.45),0 1px 0 rgba(0,0,0,.25)}
+
+#v-pickbox{margin-bottom:16px}
+.ui-msg.ok{color:#2D6A4F;font-size:14.5px;text-align:center;line-height:1.5;margin:12px 4px 0}
+.lb-wait{font-family:'Jua',sans-serif;font-size:16px;color:#BFE0F2;
+  text-align:center;margin:4px 0 14px;text-shadow:0 2px 0 rgba(0,0,0,.5)}
+#s-lobby #qrbox img,#s-lobby #qrbox canvas{background:#fff;padding:10px;border-radius:12px}
+
+@media (max-width:380px){
+  .numgrid{gap:2px 8px}
+  .ui-inputwrap.sm{height:48px}
+  .ui-btn.big{height:62px;font-size:22px}
+  #s-lobby .seg button{font-size:15px}
+}
+</style>
+</head>
+<body>
+<div class="wrap" id="paged">
+<section id="s-config" class="hide"><h1>파이어베이스 연결 확인</h1>
+<div class="card" style="border-color:var(--alert);background:#FFF2F5"><p id="v-cfgmsg" style="margin:0;font-size:14px"></p></div></section>
+
+<section id="s-home" class="hide">
+<img class="home-logo" src="images/ui-logo.png" alt="불이 꺼진 학교">
+<p class="home-tag">학교의 불이 모두 꺼졌다.<br>미션을 완료해 학교를 되살려라.</p>
+
+<div class="ui-panel">
+  <div class="ui-ribbon">작전 참가</div>
+  <p class="sub hide" id="v-invited">초대받은 작전실입니다. 이름만 입력하세요.</p>
+
+  <label class="ui-label" for="i-name">내 이름</label>
+  <div class="ui-inputwrap"><input id="i-name" maxlength="8" placeholder="예: 눈송이" autocomplete="off"></div>
+
+  <label class="ui-label" for="i-code">작전 코드 (4자리)</label>
+  <div class="ui-inputwrap"><input id="i-code" maxlength="4" placeholder="예: 7421" inputmode="numeric" autocomplete="off"></div>
+
+  <button class="ui-btn orange" id="b-join">참가하기</button>
+</div>
+
+<div class="ui-divider"><img src="images/ui-div.png" alt=""></div>
+
+<div class="ui-panel teacher">
+  <img class="ui-school" src="images/ui-school.png" alt="">
+  <p class="ui-q">선생님이신가요?</p>
+  <button class="ui-btn gray" id="b-teacher">새 작전실 만들기</button>
+  <div id="pinbox" class="hide">
+    <div class="ui-inputwrap pin"><input id="i-pin" type="password" maxlength="6" placeholder="선생님 PIN" inputmode="numeric" autocomplete="off"></div>
+    <button class="ui-btn orange" id="b-create">작전실 열기</button>
+    <p class="ui-msg" id="v-pinmsg"></p>
+  </div>
+</div>
+
+<details class="help"><summary>게임 규칙 보기</summary><div class="card" style="margin-top:10px">
+<p><b>목표</b> — 각 대원에게 서로 다른 미션이 배정됩니다. <b>모든 대원이 자기 할당량을 완료하면 즉시 대원 승리!</b></p>
+<p><b>미션</b> — 내 미션 장소에서 소수의 나눗셈 문제를 모두 풀어야 완료됩니다. 유령이 되어도 내 미션은 계속 수행할 수 있습니다. <b>틀리면 10초 동안 그 자리를 못 씁니다.</b></p>
+<p><b>방해꾼</b> — 가짜 미션은 전체 게이지에 전혀 반영되지 않습니다. 가짜 미션 한 곳을 완료하면 <b>위장 스킬 1회</b>를 얻습니다. 정전·미션잠금으로 대원을 방해할 수 있습니다.</p>
+<p style="margin:0"><b>신고 / 긴급회의</b> — 얼어붙은 친구를 발견하면 신고, 의심되면 긴급회의(1인 1회). 투표로 한 명을 내보냅니다.</p></div></details>
+<img class="home-peng" src="images/ui-peng.png" alt="">
+</section>
+
+<section id="s-lobby" class="hide">
+<div class="lb-header">
+  <div class="lb-cap">작전실 번호</div>
+  <div class="lb-code" id="v-code">0000</div>
+  <div class="lb-cnt" id="v-count">0명 대기 중</div>
+</div>
+
+<div class="ui-panel lb" id="v-invite">
+  <div class="ui-ribbon">학생 초대</div>
+  <div class="ui-inputwrap link"><span id="v-link">링크 준비 중…</span></div>
+  <div class="lb-row2">
+    <button class="ui-btn orange" id="b-copy">링크 복사</button>
+    <button class="ui-btn light qr" id="b-qr"><img src="images/ui-qr.png" alt="">QR</button>
+  </div>
+  <div id="qrbox" class="hide center" style="margin-top:14px"></div>
+</div>
+
+<div class="ui-panel lb">
+  <div class="ui-ribbon">들어온 친구들</div>
+  <div class="plist" id="v-lobbylist"></div>
+</div>
+
+<div class="ui-panel lb" id="v-hostpanel">
+  <div class="ui-ribbon">게임 설정</div>
+  <label class="ui-label">방해꾼 정하기</label>
+  <div class="seg" id="seg-imp"><button class="on" data-mode="random">랜덤</button><button data-mode="pick">직접 지정</button></div>
+  <div id="v-pickbox" class="hide"><label class="ui-label">방해꾼으로 쓸 학생을 눌러 고르세요</label><div class="plist" id="v-picklist"></div></div>
+  <label class="ui-label">학생 시야</label>
+  <div class="seg" id="seg-vis"><button data-vis="170">좁게</button><button class="on" data-vis="220">보통</button><button data-vis="290">넓게</button></div>
+  <div class="numgrid">
+    <div><label class="ui-label" for="i-imp">방해꾼 수</label><div class="ui-inputwrap sm"><input id="i-imp" type="number" min="1" max="1" value="1" inputmode="numeric"></div></div>
+    <div><label class="ui-label" for="i-station">1인당 미션 수</label><div class="ui-inputwrap sm"><input id="i-station" type="number" min="2" max="8" value="4" inputmode="numeric"></div></div>
+    <div><label class="ui-label" for="i-per">자리당 문제 수</label><div class="ui-inputwrap sm"><input id="i-per" type="number" min="3" max="10" value="3" inputmode="numeric"></div></div>
+    <div><label class="ui-label" for="i-min">라운드 시간(분)</label><div class="ui-inputwrap sm"><input id="i-min" type="number" min="3" max="60" value="15" inputmode="numeric"></div></div>
+    <div><label class="ui-label" for="i-meet">회의 시간(초)</label><div class="ui-inputwrap sm"><input id="i-meet" type="number" min="30" max="300" value="90" inputmode="numeric"></div></div>
+    <div><label class="ui-label" for="i-cool">얼리기 쿨타임(초)</label><div class="ui-inputwrap sm"><input id="i-cool" type="number" min="10" max="90" value="30" inputmode="numeric"></div></div>
+  </div>
+  <button class="ui-btn orange big" id="b-start">게임 시작</button>
+  <p class="ui-msg ok" id="v-startmsg">4명 이상이면 시작할 수 있어요 (10명 권장)</p>
+</div>
+
+<p class="lb-wait" id="v-waitmsg">선생님이 시작하기를 기다리는 중…</p>
+<button class="ui-btn gray" id="b-leave">방 나가기</button>
+</section>
+
+<section id="s-meeting" class="hide"><h1 style="color:var(--alert)">긴급회의</h1>
+<p class="sub" id="v-meetreason"></p>
+<div class="card flat"><div class="timer" id="v-meettimer">01:30</div></div>
+<div class="card"><h3>누가 방해꾼일까?</h3><div class="plist" id="v-votelist"></div></div>
+<p class="sub center" id="v-votemsg">한 명을 눌러 투표하세요</p></section>
+
+<section id="s-result" class="hide">
+<div class="rolecard" id="v-resultcard"><div class="big" id="v-resulttitle"></div><div class="msg" id="v-resultmsg"></div></div>
+<div class="card"><h3>모두의 정체</h3><div class="plist" id="v-resultlist"></div></div>
+<button class="btn-main" id="b-again">대기실로 돌아가기</button></section>
+</div>
+
+<section id="s-game" class="hide">
+<div id="viewport"><div id="world"><canvas id="mapcv"></canvas></div></div>
+<div id="vision"></div><div id="guide" class="hide">🔸</div>
+<div id="hud"><div class="line"><span class="chip" id="v-rolechip">대원</span><span id="v-place">복도</span><span id="v-gametimer">15:00</span></div>
+<div style="display:flex;justify-content:space-between;color:#BFE0F2;font-family:Jua,sans-serif;font-size:12px;margin:0 2px 3px"><span>대원 전체 미션 게이지</span><span id="v-progtext">0 / 0</span></div><div class="bar"><i id="v-progbar"></i></div><div id="warn" class="hide"></div></div>
+<div id="missions" class="hide"><h4 id="v-mtitle">내 미션</h4><div id="v-mlist"></div></div>
+<div class="mapkbd">M 지도</div>
+<div id="mapoverlay" class="hide">
+  <div class="mapbox">
+    <div class="maphead"><span>학교 전체 지도</span><small>M 키를 다시 누르면 닫힙니다</small></div>
+    <canvas id="mapoverview" width="900" height="650"></canvas>
+    <div class="maplegend"><span>● 내 위치</span><span>◆ 내 남은 미션</span><span>✓ 완료 미션</span></div>
+  </div>
+</div>
+<div id="pad"><div id="knob"></div></div>
+<div id="acts">
+<button class="abtn small" id="b-emergency">긴급<br>회의</button>
+<button class="abtn small kill" id="b-report">신고</button>
+<button class="abtn sab" id="b-sabotage">방해<br>공작</button>
+<button class="abtn transform hide" id="b-transform">변신<br>1회</button>
+<button class="abtn kill" id="b-freeze">얼리기</button>
+<button class="abtn task" id="b-task">미션</button></div>
+<div id="quizpanel" class="hide"><h3 id="v-tasktitle">미션 — 소수의 나눗셈</h3>
+<div class="qdots" id="v-qdots">1 / 3</div><div class="quiz" id="v-quiz">7.2 ÷ 4</div>
+<div class="field"><input id="i-answer" placeholder="답을 쓰세요" inputmode="decimal" autocomplete="off"></div>
+<div class="row"><button class="btn-main" id="b-answer">확인</button>
+<button class="btn-sub" id="b-closequiz" style="flex:0 0 110px">닫기</button></div>
+<div class="fb" id="v-fb"></div></div>
+<div id="sabpanel" class="hide"><h3>방해공작</h3>
+<button class="sabbtn" data-sab="dark"><span>💡</span><span>정전<small>30초 동안 모두의 시야가 확 줄어듭니다</small></span></button>
+<button class="sabbtn" data-sab="lock"><span>🔒</span><span>미션 잠그기<small>25초 동안 아무도 미션을 못 합니다</small></span></button>
+<button class="btn-sub" id="b-sabclose" style="margin-top:4px">닫기</button></div>
+<div id="rolepop" class="hide"><div><div class="big" id="v-popname">탐정 대원</div>
+<div class="msg" id="v-popmsg"></div><div class="mates" id="v-popmates"></div>
+<div class="tapin">화면을 누르면 시작합니다</div></div></div>
+<div id="freeze-reveal" class="hide"><div class="freeze-card">
+<div class="freeze-imp" aria-hidden="true"></div>
+<div class="freeze-title">방해꾼에게 얼어붙었다!</div>
+<div class="freeze-sub">얼리기 공격을 당했습니다</div>
+</div></div>
+</section>
+
+<script>
+/* ═══ 1) 파이어베이스 ═══ */
+const firebaseConfig={apiKey:"AIzaSyA1uJwPj_1tCBJD8I5_CNBoIi_BKFRl8t0",
+authDomain:"amongus-re.firebaseapp.com",
+databaseURL:"https://amongus-re-default-rtdb.asia-southeast1.firebasedatabase.app",
+projectId:"amongus-re",storageBucket:"amongus-re.firebasestorage.app",
+messagingSenderId:"278604527639",appId:"1:278604527639:web:b3d64320fbb2480c56c452"};
+/* ═══ 2) 선생님 PIN ═══ */
+const TEACHER_PIN="2026";
+/* ═══ 3) 그림 ═══ */
+/* 물건마다 실제 크기(px). 지금까지는 전부 96px로 그려서 책상이 시계보다 커 보였습니다.
+   furniture.png: 0책상 1의자 2칠판 3사물함 4책장 5실험대 6컴퓨터책상 7방송콘솔 8침대
+   9급식대 10매트 11공 12화분 13쓰레기통 14소화기 15문 16열린문 17CCTV 18계단 19자물쇠문 20키패드문 21열린사물함 */
+const FURN_W=[70,50,110,80,80,88,80,84,88,100,92,60,46,44,34,64,64,38,88,64,64,80];
+/* 벽에 붙는 물건 — 바닥이 아니라 위쪽 벽면에 걸립니다 */
+const FURN_WALL=new Set([]);  // 벽걸이 물건은 쓰지 않습니다
+/* 부딪히는 물건 (길을 막아야 하는 것) */
+const FURN_SOLID=new Set([0,1,3,4,5,6,7,8,9,10,11,12,13,15,16,18,19,20,21]);
+
+/* props2.png: 0교사책상 1시계 2게시판 3청소함 4쓰레기통 5가방 6정수기 7책장 8소화기 9CCTV
+   10우산꽂이 11신발장 12복사기 13피아노 14보면대 15현미경 16실험대 17프린터
+   18반납함 19급식대 20농구골대 21라바콘 22비상구 23사물함 */
+const P2_W=[84,38,80,70,44,40,48,80,34,38,46,84,66,104,44,38,88,54,52,100,96,38,46,72];
+const P2_WALL=new Set([]);   // 벽걸이 물건은 쓰지 않습니다
+const P2_SOLID=new Set([0,3,4,5,6,7,10,11,12,13,14,15,16,17,18,19,20,21,23]);
+
+const DECOR=[[7,14,4],[7,25,7],[9,41,4],[24,19,6],[24,22,4],[24,24,6],[23,8,4],[41,6,4],[50,8,18],[65,8,17],[49,15,0],[52,16,0],[50,16,12],[48,27,13],[50,27,14],[53,27,14],[48,29,7],[67,26,0],[53,38,20],[55,38,21],[46,41,21],[27,40,11],[29,41,11],[32,40,11],[34,40,10],[27,42,4],[19,33,0]];
+const IMG={props2:"images/props2.png",tiles:"images/tiles.png",furn:"images/furniture.png",obj:"images/mission-objects.png"};
+/* 방별 미션 장치 (0 컴퓨터 / 1 전력함 / 2 방송콘솔 / 3 실험장치 / 4 문잠금해제) */
+const DEVICE={com:0,office:0,admin:0,lib:0,class1:4,class2:4,art:4,lunch:4,kitchen:4,
+hall:1,lobby:1,gym:1,locker:1,bcast:2,music:2,sci:3,prep:3,health:3};
+const SPR={frames:4,rows:{down:0,side:1,up:2},fps:7,draw:76};
+/* ═══ 4) 기본 설정 ═══ */
+const DEFAULTS={imposters:1,stationCount:4,perStation:3,gameMin:15,meetingSec:90,freezeSec:30,vision:220};
+
+/* ═══ 학교 지도 ═══ */
+const TS=64,GW=72,GH=52;
+const WORLD={w:GW*TS,h:GH*TS};
+const ROOMDEF=[
+{id:"class1",name:"6-1 교실",rects:[[2,2,11,7]],f:0},
+{id:"class2",name:"6-2 교실",rects:[[2,11,11,6]],f:0},
+{id:"sci",name:"과학실",rects:[[2,21,9,7],[11,23,4,5]],f:5},
+{id:"prep",name:"과학준비실",rects:[[3,31,6,4]],f:5},
+{id:"art",name:"미술실",rects:[[2,38,11,6]],f:0},
+{id:"hall",name:"중앙홀",rects:[[20,17,14,10],[24,14,6,3],[24,27,6,3]],f:12},
+{id:"lunch",name:"급식실",rects:[[19,2,16,8]],f:9},
+{id:"kitchen",name:"조리실",rects:[[36,2,7,8]],f:9},
+{id:"lib",name:"도서관",rects:[[47,2,12,9]],f:4},
+{id:"com",name:"컴퓨터실",rects:[[62,2,8,9]],f:6},
+{id:"office",name:"교무실",rects:[[47,14,10,6]],f:0},
+{id:"health",name:"보건실",rects:[[61,14,9,6]],f:8},
+{id:"music",name:"음악실",rects:[[47,24,10,7]],f:1},
+{id:"bcast",name:"방송실",rects:[[62,24,8,5]],f:7},
+{id:"gym",name:"체육관",rects:[[44,35,14,10]],f:10},
+{id:"locker",name:"탈의실",rects:[[61,35,9,5]],f:3},
+{id:"lobby",name:"현관홀",rects:[[24,38,14,7]],f:12},
+{id:"admin",name:"행정실",rects:[[19,31,8,5]],f:0}];
+const CORRIDORS=[[15,2,3,44],[41,2,3,10],[43,12,27,3],[18,10,25,3],[2,18,13,2],[36,15,5,30],[43,21,4,26],[58,21,3,26],[15,46,55,3],[2,46,13,3],[18,28,3,18],[43,31,16,2]];
+const DOORS=[[8,9,2,1],[8,17,2,1],[9,20,2,1],[5,28,2,3],[5,35,3,1],[8,44,2,1],[13,5,2,2],[13,13,2,2],[13,24,2,2],[13,40,2,2],[26,10,3,1],[33,10,2,1],[37,10,2,1],[35,5,1,3],[24,13,3,1],[24,30,3,1],[18,20,2,2],[34,21,2,2],[34,24,2,2],[52,11,2,1],[52,13,2,1],[64,11,2,1],[64,13,2,1],[45,16,2,1],[56,16,2,1],[59,16,2,1],[60,17,1,2],[52,20,2,1],[52,23,2,1],[64,23,2,1],[57,26,1,2],[61,26,1,2],[50,33,2,2],[50,45,3,1],[59,37,2,2],[59,45,2,1],[30,36,3,2],[30,45,3,1],[22,33,2,2],[22,36,2,1],[18,40,1,2],[38,40,3,1],[41,15,2,1]];
+/* 방 안 오브젝트는 실제 학교처럼 교실 용도에 맞춰 충분히 배치합니다.
+   방 이름이 놓이는 하단/모서리 공간은 비워 두고, 책장·사물함 등 일부만 충돌합니다. */
+const OBSTACLES=[
+{gx:5,gy:4,gw:1,gh:1,f:0,solid:true},{gx:7,gy:4,gw:1,gh:1,f:0,solid:true},{gx:9,gy:4,gw:1,gh:1,f:0,solid:true},
+{gx:5,gy:6,gw:1,gh:1,f:0,solid:true},{gx:7,gy:6,gw:1,gh:1,f:0,solid:true},{gx:9,gy:6,gw:1,gh:1,f:0,solid:true},
+{gx:5,gy:13,gw:1,gh:1,f:0,solid:true},{gx:7,gy:13,gw:1,gh:1,f:0,solid:true},{gx:9,gy:13,gw:1,gh:1,f:0,solid:true},
+{gx:5,gy:23,gw:1,gh:1,f:5,solid:true},{gx:8,gy:23,gw:1,gh:1,f:5,solid:true},{gx:5,gy:25,gw:1,gh:1,f:5,solid:true},
+{gx:9,gy:25,gw:1,gh:1,f:5,solid:true},{gx:5,gy:40,gw:1,gh:1,f:0,solid:true},{gx:9,gy:40,gw:1,gh:1,f:0,solid:true},
+{gx:7,gy:41,gw:1,gh:1,f:0,solid:true},{gx:29,gy:19,gw:1,gh:1,f:12,solid:true},{gx:29,gy:22,gw:1,gh:1,f:12,solid:true},
+{gx:23,gy:5,gw:1,gh:1,f:9,solid:true},{gx:26,gy:5,gw:1,gh:1,f:9,solid:true},{gx:30,gy:5,gw:1,gh:1,f:9,solid:true},
+{gx:23,gy:7,gw:1,gh:1,f:9,solid:true},{gx:27,gy:7,gw:1,gh:1,f:9,solid:true},{gx:30,gy:7,gw:1,gh:1,f:9,solid:true},
+{gx:39,gy:5,gw:1,gh:1,f:9,solid:true},{gx:41,gy:5,gw:1,gh:1,f:9,solid:true},{gx:39,gy:7,gw:1,gh:1,f:9,solid:true},
+{gx:50,gy:5,gw:1,gh:1,f:4,solid:true},{gx:53,gy:5,gw:1,gh:1,f:4,solid:true},{gx:55,gy:5,gw:1,gh:1,f:4,solid:true},
+{gx:50,gy:7,gw:1,gh:1,f:4,solid:true},{gx:53,gy:7,gw:1,gh:1,f:4,solid:true},{gx:55,gy:7,gw:1,gh:1,f:4,solid:true},
+{gx:64,gy:5,gw:1,gh:1,f:6,solid:true},{gx:66,gy:5,gw:1,gh:1,f:6,solid:true},{gx:67,gy:7,gw:1,gh:1,f:6,solid:true},
+{gx:64,gy:7,gw:1,gh:1,f:6,solid:true},{gx:64,gy:17,gw:1,gh:1,f:8,solid:true},{gx:66,gy:17,gw:1,gh:1,f:8,solid:true},
+{gx:65,gy:26,gw:1,gh:1,f:7,solid:true},{gx:46,gy:38,gw:1,gh:1,f:10,solid:true},{gx:49,gy:38,gw:1,gh:1,f:10,solid:true},
+{gx:49,gy:41,gw:1,gh:1,f:11,solid:true},{gx:53,gy:41,gw:1,gh:1,f:11,solid:true},{gx:64,gy:37,gw:1,gh:1,f:3,solid:true},
+{gx:66,gy:37,gw:1,gh:1,f:3,solid:true}
+];
+
+/* 방 이름은 가구가 적은 가장자리 위치에 별도로 둡니다. 좌표는 타일 단위입니다. */
+const LABEL_POS={
+class1:[7.5,8.2],class2:[7.5,16.2],sci:[7.0,27.2],prep:[6.0,34.35],art:[7.5,43.35],
+hall:[27.0,29.0],lunch:[27.0,9.2],kitchen:[39.5,9.2],lib:[53.0,10.1],com:[66.0,10.1],
+office:[52.0,19.25],health:[65.5,19.2],music:[52.0,30.1],bcast:[66.0,28.35],gym:[51.0,44.2],
+locker:[65.5,39.2],lobby:[31.0,44.2],admin:[23.0,35.15]
+};
+const FLOORS={class1:0,class2:0,sci:2,prep:2,art:0,hall:1,lunch:5,kitchen:5,lib:0,com:1,
+office:1,health:5,music:0,bcast:1,gym:6,locker:5,lobby:3,admin:1};
+const COLORS=["#FF6B6B","#4D96FF","#43C59E","#FFC94A","#A78BFA","#FF8FC7","#FF8C42","#B0B23C",
+"#7FD4E8","#C084FC","#F87171","#34D399","#FBBF24","#60A5FA","#FB7185","#A3E635"];
+const MOVE_SPEED=204,ZOOM=1.05,BODY_R=15,SEND_MS=120; // 기존 대비 1.2배 증가한 공통 이동속도(px/sec)
+const moveSpeedForStatus=status=>MOVE_SPEED*(status==="out"?1.5:1); // 유령은 1.5배 빠르게
+const REMOTE_CATCHUP=1.7; // 원격 캐릭터는 네트워크 지연만 부드럽게 따라잡음
+const FREEZE_RANGE=110,WITNESS_RANGE=320,STATION_RANGE=80;
+const IMP_VISION_BONUS=60,WRONG_LOCK=10000,SAB_COOL=45000;
+const BLACKOUT_TIME=30000,MISSLOCK_TIME=25000;
+const cfg=k=>(R&&R.settings&&R.settings[k]!=null)?R.settings[k]:DEFAULTS[k];
+// 시작 즉시 대원 수가 방해꾼 수 이하가 되어 게임이 끝나지 않도록 인원별 최대 방해꾼 수를 제한합니다.
+function maxImpostersFor(n){return Math.max(1,Math.min(4,Math.floor((Math.max(2,n)-1)/2)));}
+function recommendedImpostersFor(n){return n>=16?4:n>=12?3:n>=8?2:1;}
+
+let db=null,myId=null,myName="",roomCode=null,roomRef=null,posRef=null;
+let R=null,POS={},isHost=false,screenNow="home";
+let me2={x:0,y:0,d:"down",face:"left",moving:false};
+let pgEls={},curQuiz=null,curStation=null,hostTimer=null,uiTimer=null,lastSend=0,myRoomCache=null;
+let joy={active:false,dx:0,dy:0},keys={},frameTick=0,animNow=performance.now(),camX=0,camY=0,raf=null,lastFrameAt=performance.now();
+let WALLS=[],PROP_BLOCKS=[],ROOMS=[],STATIONS=[],grid=null,worldBuilt=false;
+let WALLKIND=null;   // 실제로 그린 벽 타일 번호 (0,1 = 민무늬)
+let impMode="random",impPicks=[],visPick=220,settingsFilled=false;
+let popShown=false,lastPhase=null,wrongUntil={},lastMyStatus=null,freezeRevealTimer=null,mapOpen=false;
+
+const $=id=>document.getElementById(id);
+function show(id){["s-config","s-home","s-lobby","s-meeting","s-result"].forEach(s=>$(s).classList.toggle("hide",s!==id));
+document.body.classList.toggle("night",id==="s-home"||id==="s-lobby");
+$("paged").classList.toggle("hide",id==="s-game");$("s-game").classList.toggle("hide",id!=="s-game");window.scrollTo(0,0);}
+function toast(m,ms=2400){const t=document.createElement("div");t.className="toast";t.textContent=m;
+document.body.appendChild(t);setTimeout(()=>t.remove(),ms);}
+function getMyId(){try{let v=localStorage.getItem("peng_id");
+if(!v){v="p"+Math.random().toString(36).slice(2,10);localStorage.setItem("peng_id",v);}return v;}
+catch(e){return "p"+Math.random().toString(36).slice(2,10);}}
+const rnd=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+const fmt=n=>Number(n.toFixed(4)).toString();
+const esc=s=>String(s).replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+const roomName=rid=>{const r=ROOMS.find(x=>x.id===rid);return r?r.name:"복도";};
+
+function makeQuiz(){const t=rnd(1,3);let a,b,ans;
+if(t===1){const q=rnd(11,89),d=rnd(2,9);a=(q*d)/10;b=d;ans=q/10;}
+else if(t===2){const q=rnd(2,19),d=rnd(2,9);a=(q*d)/10;b=d/10;ans=q;}
+else{const q=rnd(11,49),d=rnd(12,29);a=(q*d)/100;b=d/10;ans=q/10;}
+return {text:fmt(a)+" ÷ "+fmt(b),ans:ans};}
+function newQuiz(){curQuiz=makeQuiz();$("v-quiz").textContent=curQuiz.text;$("i-answer").value="";$("v-fb").textContent="";}
+
+/* ═══ 지도 ═══ */
+function buildWorld(){
+if(worldBuilt)return;worldBuilt=true;
+const g=[];for(let y=0;y<GH;y++)g.push(new Array(GW).fill(1));
+const carve=(r,v)=>{for(let y=r[1];y<r[1]+r[3];y++)for(let x=r[0];x<r[0]+r[2];x++)
+if(y>=0&&y<GH&&x>=0&&x<GW)g[y][x]=v;};
+ROOMS=ROOMDEF.map(r=>{let x0=1e9,y0=1e9,x1=-1,y1=-1;
+r.rects.forEach(t=>{x0=Math.min(x0,t[0]);y0=Math.min(y0,t[1]);x1=Math.max(x1,t[0]+t[2]);y1=Math.max(y1,t[1]+t[3]);});
+return Object.assign({},r,{x:x0*TS,y:y0*TS,w:(x1-x0)*TS,h:(y1-y0)*TS});});
+ROOMDEF.forEach(r=>r.rects.forEach(t=>carve(t,0)));
+CORRIDORS.forEach(c=>carve(c,0));
+DOORS.forEach(d=>carve(d,0));
+// 가구/오브젝트는 방 안의 "벽"이 아닙니다. 바닥은 그대로 두고 충돌만 별도로 처리합니다.
+/* 책상·책장·사물함처럼 부피가 있는 가구는 실제로 막습니다.
+   충돌 영역은 그림보다 조금 작게 잡아 모서리에 걸리지 않게 합니다. */
+PROP_BLOCKS=OBSTACLES.filter(o=>{
+  const fi=o.f||0;
+  if(FURN_WALL.has(fi))return false;          // 벽걸이는 길을 막지 않음
+  return o.solid||FURN_SOLID.has(fi);
+}).map(o=>{
+  const fi=o.f||0,scale=o.scale||1;
+  const w=(FURN_W[fi]||58)*scale;
+  const left=o.gx*TS+(o.gw*TS-w)/2;
+  const footY=o.gy*TS+o.gh*TS;               // 물건이 바닥에 닿는 선
+  return {x:left+w*0.14,y:footY-w*0.40,w:w*0.72,h:w*0.34};
+});
+/* 장식 소품도 여기서 함께 막습니다. 미션 장치를 고르기 전에 계산해야
+   장치가 소품에 파묻히지 않습니다. (벽걸이는 길을 막지 않습니다) */
+DECOR.forEach(([dx,dy,fi])=>{
+  if(P2_WALL.has(fi)||!P2_SOLID.has(fi))return;
+  const w=P2_W[fi]||46;
+  PROP_BLOCKS.push({x:dx*TS+TS*0.5-w*0.34,y:dy*TS+TS-w*0.34,w:w*0.68,h:w*0.30});
+});
+grid=g;WALLS=[];
+for(let y=0;y<GH;y++){let s=-1;
+for(let x=0;x<=GW;x++){const w=(x<GW&&g[y][x]===1);
+if(w&&s<0)s=x;else if(!w&&s>=0){WALLS.push({x:s*TS,y:y*TS,w:(x-s)*TS,h:TS});s=-1;}}}
+
+/* 모바일 브라우저 호환: 4608×3328(약 1530만 px) 대형 캔버스를 그대로 만들면
+   일부 휴대폰/GPU에서 검은 화면이 될 수 있어 내부 렌더 해상도를 절반으로 낮춘다.
+   CSS상 월드 크기는 그대로 유지하므로 충돌/좌표/카메라는 전혀 바뀌지 않는다. */
+const MAP_RENDER_SCALE=0.5;
+const cv=$("mapcv");
+cv.width=Math.round(WORLD.w*MAP_RENDER_SCALE);
+cv.height=Math.round(WORLD.h*MAP_RENDER_SCALE);
+cv.style.width=WORLD.w+"px";cv.style.height=WORLD.h+"px";
+const c=cv.getContext("2d",{alpha:false});
+if(!c){toast("이 기기에서 지도 화면을 만들 수 없어요. 브라우저를 새로고침해 주세요",5000);return;}
+c.imageSmoothingEnabled=false;
+c.setTransform(MAP_RENDER_SCALE,0,0,MAP_RENDER_SCALE,0,0);
+c.fillStyle="#06131C";c.fillRect(0,0,WORLD.w,WORLD.h);
+WALLKIND=new Int8Array(GW*GH).fill(1);
+const roomOf=(x,y)=>{for(const r of ROOMDEF)for(const t of r.rects)
+if(x>=t[0]&&x<t[0]+t[2]&&y>=t[1]&&y<t[1]+t[3])return r.id;return null;};
+/* 칠판(태극기)은 교실마다 정확히 한 칸. 방 중앙에서 가장 가까운 벽 칸을 고릅니다. */
+const BOARD_COL={};
+["class1","class2","art","music"].forEach(rid=>{
+  const rr=ROOMS.find(q=>q.id===rid); if(!rr)return;
+  const cx=rr.x/TS+rr.w/(2*TS);
+  let best=null,bd=1e9;
+  rr.rects.forEach(t=>{
+    for(let y=t[1];y<t[1]+t[3];y++)for(let x=t[0];x<t[0]+t[2];x++){
+      if(g[y][x]!==0||y<=0||g[y-1][x]!==1)continue;   // 위쪽이 벽인 자리만
+      const d=Math.abs(x-cx);
+      if(d<bd){bd=d;best=x;}
+    }
+  });
+  if(best!==null)BOARD_COL[rid]=best;
+});
+const tiles=new Image();
+tiles.onload=()=>{
+for(let y=0;y<GH;y++)for(let x=0;x<GW;x++){
+if(g[y][x]===0){let fi=7,rid=roomOf(x,y);
+if(rid)fi=FLOORS[rid]!=null?FLOORS[rid]:7;
+c.drawImage(tiles,fi*64,0,64,64,x*TS,y*TS,TS,TS);}
+else{let wi=1;const below=(y+1<GH&&g[y+1][x]===0);
+if(below){
+  const rid=roomOf(x,y+1);
+  if(rid){
+    const rr=ROOMS.find(q=>q.id===rid);
+    const cx=rr?(rr.x/TS+rr.w/(2*TS)):x;
+    // 교실/미술/음악은 칠판(태극기) 한 칸 + 양옆 창문
+    if(["class1","class2","art","music"].includes(rid)){
+      wi=(x===BOARD_COL[rid])?3:(((x%5)===1||(x%5)===4)?2:0);
+    }else if(["sci","prep"].includes(rid)){
+      wi=(x%4===1)?2:7;
+    }else if(["lunch","kitchen"].includes(rid)){
+      wi=(x%4===1)?2:8;
+    }else if(rid==="locker") wi=4;
+    else wi=((x+y)%6===0)?2:1;
+  }else wi=1;
+}
+if(WALLKIND)WALLKIND[y*GW+x]=wi;
+c.drawImage(tiles,wi*64,64,64,64,x*TS,y*TS,TS,TS);}}
+// 벽 바로 아래 바닥에 그림자를 깔아 벽과 바닥이 붙어 보이지 않게 합니다
+for(let y=0;y<GH;y++)for(let x=0;x<GW;x++){
+  if(g[y][x]!==0)continue;
+  if(y>0&&g[y-1][x]===1){
+    const gr=c.createLinearGradient(0,y*TS,0,y*TS+TS*0.42);
+    gr.addColorStop(0,"rgba(8,18,28,.52)");gr.addColorStop(1,"rgba(8,18,28,0)");
+    c.fillStyle=gr;c.fillRect(x*TS,y*TS,TS,TS*0.42);
+  }
+  if(x>0&&g[y][x-1]===1){
+    const gl=c.createLinearGradient(x*TS,0,x*TS+TS*0.3,0);
+    gl.addColorStop(0,"rgba(8,18,28,.34)");gl.addColorStop(1,"rgba(8,18,28,0)");
+    c.fillStyle=gl;c.fillRect(x*TS,y*TS,TS*0.3,TS);
+  }
+  if(x<GW-1&&g[y][x+1]===1){
+    const gr2=c.createLinearGradient(x*TS+TS,0,x*TS+TS*0.7,0);
+    gr2.addColorStop(0,"rgba(8,18,28,.34)");gr2.addColorStop(1,"rgba(8,18,28,0)");
+    c.fillStyle=gr2;c.fillRect(x*TS+TS*0.7,y*TS,TS*0.3,TS);
+  }
+}
+drawProps();};
+tiles.onerror=()=>{
+/* 이미지 파일을 못 읽어도 게임은 검은 화면이 되지 않도록 기본 지도를 그린다. */
+for(let y=0;y<GH;y++)for(let x=0;x<GW;x++){
+  c.fillStyle=g[y][x]===0?"#DCEAF3":"#20384A";
+  c.fillRect(x*TS,y*TS,TS,TS);
+}
+drawProps();
+toast("지도 그림을 불러오지 못해 기본 지도로 표시합니다",5000);};
+tiles.src=IMG.tiles;
+
+/* 일부 모바일 브라우저가 백그라운드 복귀 시 캔버스 텍스처를 잃는 경우 재구성 */
+document.addEventListener("visibilitychange",()=>{
+  if(document.visibilityState==="visible"&&worldBuilt&&$("mapcv")){
+    const mc=$("mapcv");
+    if(mc.width===0||mc.height===0){worldBuilt=false;buildWorld();}
+  }
+});
+
+const wd=$("world");
+ROOMS.forEach(r=>{const d=document.createElement("div");d.className="zlabel";d.textContent=r.name;
+const lp=LABEL_POS[r.id];
+d.style.left=(lp?lp[0]*TS:(r.x+r.w/2))+"px";d.style.top=(lp?lp[1]*TS:(r.y+r.h/2))+"px";
+d.style.fontSize=Math.max(20,Math.min(30,Math.min(r.w,r.h)*0.20))+"px";wd.appendChild(d);});
+/* 실제로 걸어서 닿을 수 있는 칸을 미리 구합니다.
+   가구를 전부 막아 놓으면 책상 사이에 갇힌 자리가 생길 수 있어서,
+   미션 장치는 반드시 이 안에서만 고릅니다. */
+const STEP=16,RW=Math.ceil(WORLD.w/STEP),RH=Math.ceil(WORLD.h/STEP);
+const reach=new Uint8Array(RW*RH);
+(function(){
+  const hallR=ROOMS.find(q=>q.id==="hall")||ROOMS[0];
+  let sx=Math.floor((hallR.x+hallR.w/2)/STEP),sy=Math.floor((hallR.y+hallR.h/2)/STEP);
+  const free=(cx,cy)=>!blockedRaw(cx*STEP+STEP/2,cy*STEP+STEP/2);
+  if(!free(sx,sy)){
+    outer:for(let rad=1;rad<40;rad++)
+      for(let dy=-rad;dy<=rad;dy++)for(let dx=-rad;dx<=rad;dx++){
+        const nx=sx+dx,ny=sy+dy;
+        if(nx>=0&&ny>=0&&nx<RW&&ny<RH&&free(nx,ny)){sx=nx;sy=ny;break outer;}
+      }
+  }
+  const q=[sy*RW+sx];reach[sy*RW+sx]=1;
+  for(let i=0;i<q.length;i++){
+    const c=q[i],cx=c%RW,cy=(c-cx)/RW;
+    const nb=[[cx+1,cy],[cx-1,cy],[cx,cy+1],[cx,cy-1]];
+    for(const [nx,ny] of nb){
+      if(nx<0||ny<0||nx>=RW||ny>=RH)continue;
+      const k=ny*RW+nx; if(reach[k])continue;
+      if(!free(nx,ny))continue;
+      reach[k]=1;q.push(k);
+    }
+  }
+})();
+const reachable=(px,py)=>{
+  const cx=Math.floor(px/STEP),cy=Math.floor(py/STEP);
+  return cx>=0&&cy>=0&&cx<RW&&cy<RH&&reach[cy*RW+cx]===1;};
+
+STATIONS=[];
+ROOMS.forEach(r=>{const ts=[];
+r.rects.forEach(t=>{for(let y=t[1];y<t[1]+t[3];y++)for(let x=t[0];x<t[0]+t[2];x++){
+  const px=x*TS+TS/2,py=y*TS+TS/2;
+  if(g[y][x]===0&&!blockedRaw(px,py)&&reachable(px,py))ts.push([x,y]);}});
+if(!ts.length)return;
+const pick=fx=>{const tx=r.x/TS+(r.w/TS)*fx,ty=r.y/TS+(r.h/TS)*0.5;
+let best=ts[0],bd=1e9;ts.forEach(([x,y])=>{const d=Math.hypot(x-tx,y-ty);if(d<bd){bd=d;best=[x,y];}});return best;};
+const a=pick(0.25),b=pick(0.75);
+const spots=(Math.abs(a[0]-b[0])+Math.abs(a[1]-b[1])<3)?[a]:[a,b];
+spots.forEach((t,i)=>{const st={id:r.id+"-"+i,room:r.id,x:t[0]*TS+TS/2,y:t[1]*TS+TS/2};
+STATIONS.push(st);
+const d=document.createElement("div");d.className="station off";d.id="st-"+st.id;
+d.innerHTML='<span class="stnum"></span>';
+d.dataset.dev=(DEVICE[r.id]!=null?DEVICE[r.id]:0);
+d.style.left=st.x+"px";d.style.top=st.y+"px";
+d.style.backgroundPosition="0px "+(-d.dataset.dev*104)+"px";
+wd.appendChild(d);});});
+
+}
+
+/* 벽에 붙는 장식 소품 — 부딪히지 않고 분위기만 만듭니다 */
+function drawDecor(){
+  const wd=$("world"),COLS=6;
+  DECOR.forEach(([gx,gy,fi])=>{
+    const w=P2_W[fi]||46,h=w;
+    const onWall=P2_WALL.has(fi);
+    // 벽걸이 물건은 위쪽이 벽일 때만, 그 벽면 위에 그립니다
+    let top;
+    if(onWall){
+      if(!(gy>0&&grid[gy-1][gx]===1))return;      // 걸 벽이 없으면 생략
+      // 창문·칠판·사물함·게시판 벽에는 절대 붙이지 않습니다
+      const kind=WALLKIND?WALLKIND[(gy-1)*GW+gx]:1;
+      if(kind!==0&&kind!==1)return;
+      top=(gy-1)*TS+TS*0.30-h*0.40;
+    }else{
+      top=gy*TS+TS-h*0.72;
+    }
+    const d=document.createElement("div");
+    d.className="prop decor"+(onWall?" onwall":"");
+    d.style.left=(gx*TS+(TS-w)/2)+"px";
+    d.style.top=top+"px";
+    d.style.width=w+"px";d.style.height=h+"px";
+    d.style.backgroundImage="url('"+IMG.props2+"')";
+    d.style.backgroundSize=(COLS*w)+"px "+(4*h)+"px";
+    d.style.backgroundPosition=(-(fi%COLS)*w)+"px "+(-Math.floor(fi/COLS)*h)+"px";
+    d.style.zIndex=onWall?1:Math.round(gy*TS)-2;
+    wd.appendChild(d);
+  });
+}
+function drawProps(){const wd=$("world"),COLS=6;
+wd.querySelectorAll(".prop").forEach(el=>el.remove());   // 재구성 시 중복 방지
+OBSTACLES.forEach(o=>{
+const fi=o.f||0,scale=o.scale||1;
+const w=(FURN_W[fi]||58)*scale,h=w;
+const onWall=FURN_WALL.has(fi);
+let top;
+const gxi=Math.round(o.gx),gyi=Math.round(o.gy);
+if(onWall&&gyi>0&&grid[gyi-1]&&grid[gyi-1][gxi]===1){
+  top=(gyi-1)*TS+TS*0.30-h*0.40;
+}else{
+  top=o.gy*TS+o.gh*TS-h*0.78;
+}
+const d=document.createElement("div");d.className="prop"+(onWall?" onwall":"");
+d.style.left=(o.gx*TS+(o.gw*TS-w)/2)+"px";
+d.style.top=top+"px";
+d.style.width=w+"px";d.style.height=h+"px";
+d.style.backgroundImage="url('"+IMG.furn+"')";
+d.style.backgroundSize=(COLS*w)+"px "+(4*h)+"px";
+d.style.backgroundPosition=(-(fi%COLS)*w)+"px "+(-Math.floor(fi/COLS)*h)+"px";
+d.style.zIndex=onWall?1:Math.round(o.gy*TS+o.gh*TS)-2;
+wd.appendChild(d);});
+drawDecor();}
+
+function hitsPropBlock(x,y,r=BODY_R){
+for(const w of PROP_BLOCKS)if(x+r>w.x&&x-r<w.x+w.w&&y+r>w.y&&y-r<w.y+w.h)return true;
+return false;}
+function blockedRaw(px,py){const r=BODY_R;
+for(let y=Math.floor((py-r)/TS);y<=Math.floor((py+r)/TS);y++)
+for(let x=Math.floor((px-r)/TS);x<=Math.floor((px+r)/TS);x++){
+if(y<0||y>=GH||x<0||x>=GW)return true;if(grid[y][x]===1)return true;}
+if(hitsPropBlock(px,py,r))return true;
+return false;}
+function blockedAt(x,y){
+for(const w of WALLS)if(x+BODY_R>w.x&&x-BODY_R<w.x+w.w&&y+BODY_R>w.y&&y-BODY_R<w.y+w.h)return true;
+if(hitsPropBlock(x,y))return true;
+return false;}
+function zoneAt(x,y){const gx=Math.floor(x/TS),gy=Math.floor(y/TS);
+for(const r of ROOMS)for(const t of r.rects)
+if(gx>=t[0]&&gx<t[0]+t[2]&&gy>=t[1]&&gy<t[1]+t[3])return r.id;
+return null;}
+function spawnPoint(){const h=ROOMS.find(r=>r.id==="hall");
+for(let i=0;i<150;i++){const x=h.x+rnd(60,h.w-60),y=h.y+rnd(60,h.h-60);
+if(!blockedAt(x,y))return {x,y};}
+return {x:h.x+h.w/2,y:h.y+h.h/2};}
+
+/* ═══ 미션 상태 — 개인별 할당 방식 ═══ */
+function parseStationList(v){
+  if(!v)return [];
+  if(Array.isArray(v))return v.filter(Boolean);
+  return String(v).split(",").map(x=>x.trim()).filter(Boolean);
+}
+function assignedList(p){
+  const explicit=parseStationList(p&&p.assignedStations);
+  if(explicit.length)return explicit;
+  // assignedStations를 읽지 못한 순간에도 초기화된 개인 progress 키를 기준으로 복구합니다.
+  return Object.keys((p&&p.tasks)||{});
+}
+function fakeAssignedList(p){
+  const explicit=parseStationList(p&&p.fakeAssignedStations);
+  if(explicit.length)return explicit;
+  return Object.keys((p&&p.fakeTasks)||{});
+}
+function taskStCount(p,sid){return Number(p&&p.tasks&&p.tasks[sid])||0;}
+function fakeStCount(p,sid){return Number(p&&p.fakeTasks&&p.fakeTasks[sid])||0;}
+function taskDone(p,sid){return taskStCount(p,sid)>=cfg("perStation");}
+function fakeTaskDone(p,sid){return fakeStCount(p,sid)>=cfg("perStation");}
+function playerTaskStats(p){
+  const list=assignedList(p);
+  return {done:list.filter(sid=>taskDone(p,sid)).length,total:list.length};
+}
+function crewMissionStats(){
+  let done=0,total=0;
+  Object.values((R&&R.players)||{}).forEach(p=>{
+    if(p.role!=="crew")return;
+    const st=playerTaskStats(p);done+=st.done;total+=st.total;
+  });
+  return {done,total};
+}
+function allCrewMissionsDone(){const s=crewMissionStats();return s.total>0&&s.done>=s.total;}
+function missionLocked(){return Date.now()<((R&&R.missionLockUntil)||0);}
+
+/* ═══ 연결 ═══ */
+function showConfig(m){$("v-cfgmsg").innerHTML=m;show("s-config");}
+function boot(){myId=getMyId();
+try{firebase.initializeApp(firebaseConfig);db=firebase.database();}
+catch(e){showConfig("연결 실패:<br><code>"+esc(String(e&&e.message||e))+"</code>");return;}
+buildWorld();show("s-home");
+const q=new URLSearchParams(location.search).get("room");
+if(q&&/^\d{4}$/.test(q)){$("i-code").value=q;$("v-invited").classList.remove("hide");
+setTimeout(()=>$("i-name").focus(),200);}}
+$("b-teacher").onclick=()=>{$("pinbox").classList.toggle("hide");
+if(!$("pinbox").classList.contains("hide"))$("i-pin").focus();};
+$("i-pin").addEventListener("keydown",e=>{if(e.key==="Enter")$("b-create").click();});
+$("b-create").onclick=async()=>{const name=$("i-name").value.trim();
+if($("i-pin").value.trim()!==TEACHER_PIN){$("v-pinmsg").textContent="PIN이 맞지 않습니다";
+$("i-pin").value="";$("i-pin").focus();return;}
+if(!name){$("v-pinmsg").textContent="위에 별명을 먼저 써 주세요";return;}
+$("v-pinmsg").textContent="";myName=name;
+const code=String(rnd(1000,9999));
+await db.ref("rooms/"+code).set({host:myId,phase:"lobby",settings:Object.assign({},DEFAULTS),createdAt:Date.now()});
+enter(code);};
+$("b-join").onclick=()=>{const name=$("i-name").value.trim(),code=$("i-code").value.trim();
+if(!name){toast("별명을 먼저 써 주세요");return;}
+if(code.length!==4){toast("방 번호 4자리를 확인해 주세요");return;}
+myName=name;
+db.ref("rooms/"+code+"/phase").get().then(s=>{
+if(!s.exists()){toast("그런 방이 없어요. 번호를 다시 확인해 주세요");return;}enter(code);});};
+async function enter(code){roomCode=code;roomRef=db.ref("rooms/"+code);posRef=db.ref("pos/"+code);
+const meRef=roomRef.child("players/"+myId);
+const snap=await meRef.get();
+if(!snap.exists()){const idx=(await roomRef.child("players").get()).numChildren();
+await meRef.set({name:myName,color:COLORS[idx%COLORS.length],role:"crew",status:"alive",
+room:null,solved:0,usedEmergency:false,lastFreeze:0,joinedAt:Date.now()});}
+else await meRef.update({name:myName});
+meRef.onDisconnect().update({online:false});meRef.update({online:true});
+posRef.child(myId).onDisconnect().remove();
+roomRef.on("value",s=>{R=s.val();render();});
+posRef.on("child_added",s=>setPos(s));posRef.on("child_changed",s=>setPos(s));
+posRef.on("child_removed",s=>{delete POS[s.key];});
+if(uiTimer)clearInterval(uiTimer);uiTimer=setInterval(tickUI,500);}
+function setPos(s){const v=s.val();if(s.key===myId)return;
+const now=performance.now();
+let p=POS[s.key];
+if(!p){
+  p=POS[s.key]={x:v.x,y:v.y,tx:v.x,ty:v.y,d:v.d||"down",face:v.face||"left",m:!!v.m,
+    vx:Number(v.vx)||0,vy:Number(v.vy)||0,netAt:now};
+  return;
+}
+// 방향은 보낸 플레이어가 실제 입력으로 계산한 값을 그대로 사용합니다.
+// 좌표 차이로 방향을 다시 추정하면 지연/보간 때문에 반대로 보일 수 있습니다.
+const netDt=Math.max(.03,Math.min(.5,(now-(p.netAt||now))/1000));
+let dvx=(Number(v.x)-Number(p.tx))/netDt,dvy=(Number(v.y)-Number(p.ty))/netDt;
+const remoteStatusForCap=R&&R.players&&R.players[s.key]?R.players[s.key].status:null;
+const dm=Math.hypot(dvx,dvy),cap=moveSpeedForStatus(remoteStatusForCap)*1.15;
+if(dm>cap){dvx=dvx/dm*cap;dvy=dvy/dm*cap;}
+p.tx=Number(v.x);p.ty=Number(v.y);
+p.d=v.d||p.d||"down";p.face=v.face||p.face||"left";p.m=!!v.m;
+p.vx=Number.isFinite(Number(v.vx))?Number(v.vx):dvx;
+p.vy=Number.isFinite(Number(v.vy))?Number(v.vy):dvy;
+p.netAt=now;}
+$("b-leave").onclick=async()=>{if(roomRef){await roomRef.child("players/"+myId).remove();
+await posRef.child(myId).remove();roomRef.off();posRef.off();roomRef=null;R=null;POS={};}
+if(hostTimer)clearInterval(hostTimer);if(uiTimer)clearInterval(uiTimer);show("s-home");};
+
+/* ═══ 초대 ═══ */
+function inviteURL(){const u=new URL(location.href);u.hash="";u.search="?room="+roomCode;return u.toString();}
+$("b-copy").onclick=async()=>{const url=inviteURL();
+try{await navigator.clipboard.writeText(url);toast("링크를 복사했어요");}
+catch(e){const ta=document.createElement("textarea");ta.value=url;ta.style.position="fixed";
+ta.style.opacity="0";document.body.appendChild(ta);ta.select();
+try{document.execCommand("copy");toast("링크를 복사했어요");}
+catch(e2){toast("복사가 안 됩니다. 링크를 길게 눌러 복사해 주세요",3500);}ta.remove();}};
+$("b-qr").onclick=()=>{const box=$("qrbox");
+if(!box.classList.contains("hide")){box.classList.add("hide");return;}
+box.classList.remove("hide");box.innerHTML="";
+if(window.QRCode)new QRCode(box,{text:inviteURL(),width:190,height:190,colorDark:"#0E3552",colorLight:"#ffffff"});
+else box.innerHTML='<p class="sub">QR을 만들지 못했어요. 링크를 복사해 주세요.</p>';};
+$("seg-imp").querySelectorAll("button").forEach(b=>{b.onclick=()=>{
+$("seg-imp").querySelectorAll("button").forEach(x=>x.classList.remove("on"));
+b.classList.add("on");impMode=b.dataset.mode;
+$("v-pickbox").classList.toggle("hide",impMode!=="pick");renderLobby();};});
+$("seg-vis").querySelectorAll("button").forEach(b=>{b.onclick=()=>{
+$("seg-vis").querySelectorAll("button").forEach(x=>x.classList.remove("on"));
+b.classList.add("on");visPick=parseInt(b.dataset.vis);};});
+function togglePick(id){const n=Object.keys((R&&R.players)||{}).length,max=Math.min(maxImpostersFor(n),Math.max(1,parseInt($("i-imp").value)||1)),i=impPicks.indexOf(id);
+if(i>=0)impPicks.splice(i,1);
+else{if(impPicks.length>=max){toast("방해꾼 수만큼만 고를 수 있어요");return;}impPicks.push(id);}
+renderLobby();}
+
+/* ═══ 시작 ═══ */
+$("b-start").onclick=async()=>{const ids=Object.keys(R.players||{});
+if(ids.length<4){toast("4명 이상 모여야 시작할 수 있어요");return;}
+const maxImp=maxImpostersFor(ids.length);
+let requestedImp=parseInt($("i-imp").value,10);
+if(!Number.isFinite(requestedImp))requestedImp=recommendedImpostersFor(ids.length);
+const impCount=Math.max(1,Math.min(maxImp,requestedImp));
+if(requestedImp!==impCount){$("i-imp").value=impCount;toast(ids.length+"명에서는 방해꾼을 최대 "+maxImp+"명까지 설정할 수 있어요.",3200);}
+const stationCount=Math.max(2,Math.min(Math.min(8,STATIONS.length),parseInt($("i-station").value)||4));
+const perStation=Math.max(3,Math.min(10,parseInt($("i-per").value)||3));
+const gameMin=Math.max(3,Math.min(60,parseInt($("i-min").value)||15));
+const meetingSec=Math.max(30,Math.min(300,parseInt($("i-meet").value)||90));
+const freezeSec=Math.max(10,Math.min(90,parseInt($("i-cool").value)||30));
+let imps;
+if(impMode==="pick"){imps=impPicks.filter(id=>ids.includes(id)).slice(0,impCount);
+if(!imps.length){toast("방해꾼으로 쓸 학생을 골라 주세요");return;}
+if(imps.length<impCount){const rest=ids.filter(id=>!imps.includes(id)).sort(()=>Math.random()-0.5);
+imps=imps.concat(rest.slice(0,impCount-imps.length));}}
+else imps=ids.slice().sort(()=>Math.random()-0.5).slice(0,impCount);
+const palette=COLORS.slice().sort(()=>Math.random()-0.5);
+while(palette.length<ids.length)palette.push("hsl("+Math.floor(Math.random()*360)+" 72% 62%)");
+
+// 각 플레이어에게 자기만의 미션을 확실히 배정합니다.
+// assignedStations뿐 아니라 progress 객체도 0으로 미리 생성해 모든 기기에서 즉시 할당 목록이 보이게 합니다.
+const stationPool=STATIONS.map(s=>s.id);
+if(!stationPool.length){toast("미션 위치를 만들지 못했어요. 새로고침 후 다시 시작해 주세요",4000);return;}
+const up={};
+ids.forEach((id,i)=>{
+  const isImp=imps.includes(id);
+  // 사람마다 셔플을 달리해 개인 미션 구성을 분산합니다.
+  const personalPool=stationPool.slice().sort(()=>Math.random()-0.5);
+  const picks=personalPool.slice(0,Math.min(stationCount,personalPool.length));
+  const progress={};picks.forEach(sid=>{progress[sid]=0;});
+  up["players/"+id+"/role"]=isImp?"imp":"crew";
+  up["players/"+id+"/color"]=palette[i];up["players/"+id+"/status"]="alive";
+  up["players/"+id+"/room"]=null;up["players/"+id+"/solved"]=0;
+  up["players/"+id+"/reported"]=false;up["players/"+id+"/body"]=null;
+  up["players/"+id+"/usedEmergency"]=false;up["players/"+id+"/lastFreeze"]=0;
+  up["players/"+id+"/assignedStations"]=isImp?null:picks.join(",");
+  up["players/"+id+"/fakeAssignedStations"]=isImp?picks.join(","):null;
+  up["players/"+id+"/tasks"]=isImp?null:progress;
+  up["players/"+id+"/fakeTasks"]=isImp?progress:null;
+  up["players/"+id+"/transformAwarded"]=false;up["players/"+id+"/transformCharge"]=0;
+  up["players/"+id+"/disguiseColor"]=null;up["players/"+id+"/disguiseUntil"]=0;
+});
+up["settings"]={imposters:imps.length,stationCount:stationCount,perStation:perStation,
+gameMin:gameMin,meetingSec:meetingSec,freezeSec:freezeSec,vision:visPick};
+up["endsAt"]=Date.now()+gameMin*60000;
+up["phase"]="play";up["meeting"]=null;up["result"]=null;
+up["blackoutUntil"]=0;up["missionLockUntil"]=0;
+up["lastSab"]=0;up["lastVoteMsg"]=null;
+await roomRef.update(up);await db.ref("pos/"+roomCode).remove();};
+
+/* ═══ 조작 ═══ */
+const pad=$("pad"),knob=$("knob");
+function padMove(e){const t=e.touches?e.touches[0]:e,r=pad.getBoundingClientRect();
+let dx=t.clientX-(r.left+r.width/2),dy=t.clientY-(r.top+r.height/2);
+const len=Math.hypot(dx,dy),max=r.width/2-14;
+if(len>max){dx=dx/len*max;dy=dy/len*max;}
+knob.style.transform=`translate(${dx}px,${dy}px)`;
+joy.dx=(len<10)?0:dx/Math.min(len,max);joy.dy=(len<10)?0:dy/Math.min(len,max);
+const m=Math.hypot(joy.dx,joy.dy);if(m>1){joy.dx/=m;joy.dy/=m;}}
+function padEnd(){joy.active=false;joy.dx=joy.dy=0;knob.style.transform="translate(0,0)";}
+pad.addEventListener("touchstart",e=>{e.preventDefault();joy.active=true;padMove(e);},{passive:false});
+pad.addEventListener("touchmove",e=>{e.preventDefault();if(joy.active)padMove(e);},{passive:false});
+pad.addEventListener("touchend",e=>{e.preventDefault();padEnd();},{passive:false});
+pad.addEventListener("mousedown",e=>{joy.active=true;padMove(e);});
+window.addEventListener("mousemove",e=>{if(joy.active)padMove(e);});
+window.addEventListener("mouseup",()=>{if(joy.active)padEnd();});
+window.addEventListener("keydown",e=>{
+const k=e.key.toLowerCase(),tag=(e.target&&e.target.tagName)||"";
+if(k==="m"&&!e.repeat&&screenNow==="game"&&tag!=="INPUT"&&tag!=="TEXTAREA"){e.preventDefault();toggleMap();return;}
+keys[k]=true;});
+window.addEventListener("keyup",e=>{keys[e.key.toLowerCase()]=false;});
+function inputVector(){let dx=joy.dx,dy=joy.dy;
+if(keys["arrowleft"]||keys["a"])dx=-1;if(keys["arrowright"]||keys["d"])dx=1;
+if(keys["arrowup"]||keys["w"])dy=-1;if(keys["arrowdown"]||keys["s"])dy=1;
+const l=Math.hypot(dx,dy);if(l>1){dx/=l;dy/=l;}
+return {dx,dy,len:Math.min(l,1)};}
+
+/* ═══ 루프 ═══ */
+function loop(ts){raf=requestAnimationFrame(loop);
+const nowFrame=typeof ts==="number"?ts:performance.now();
+// 저사양/고주사율 기기 모두 실제 시간 기준으로 같은 거리를 이동합니다.
+const dt=Math.min(0.10,Math.max(0.001,(nowFrame-lastFrameAt)/1000||1/60));
+lastFrameAt=nowFrame;animNow=nowFrame;
+if(!R||R.phase!=="play"||screenNow!=="game")return;
+const meP=R.players&&R.players[myId];if(!meP)return;
+frameTick++;
+const busy=mapOpen||!$("quizpanel").classList.contains("hide")||!$("sabpanel").classList.contains("hide")
+||!$("rolepop").classList.contains("hide");
+const locked=busy;
+const v=locked?{dx:0,dy:0,len:0}:inputVector();
+me2.moving=v.len>0.05;
+if(me2.moving){
+const ghost=(meP.status==="out");
+const myMoveSpeed=moveSpeedForStatus(meP.status);
+// 프레임이 끊겨도 벽을 뚫지 않도록 짧은 거리로 나눠 이동합니다. 유령은 1.5배 빠릅니다.
+const total=myMoveSpeed*dt,parts=Math.max(1,Math.ceil(total/8)),step=total/parts;
+for(let i=0;i<parts;i++){
+  const nx=me2.x+v.dx*step,ny=me2.y+v.dy*step;
+  if(ghost||!blockedAt(nx,me2.y))me2.x=Math.max(30,Math.min(WORLD.w-30,nx));
+  if(ghost||!blockedAt(me2.x,ny))me2.y=Math.max(30,Math.min(WORLD.h-30,ny));
+}
+if(Math.abs(v.dy)>Math.abs(v.dx))me2.d=v.dy>0?"down":"up";
+else{me2.d="side";me2.face=v.dx>0?"right":"left";}}
+const z=zoneAt(me2.x,me2.y);
+if(z!==myRoomCache){myRoomCache=z;roomRef.child("players/"+myId+"/room").set(z);}
+const now=Date.now();
+if(now-lastSend>SEND_MS){lastSend=now;
+posRef.child(myId).set({x:Math.round(me2.x),y:Math.round(me2.y),d:me2.d,face:me2.face,m:me2.moving,
+  vx:me2.moving?Math.round(v.dx*moveSpeedForStatus(meP.status)):0,vy:me2.moving?Math.round(v.dy*moveSpeedForStatus(meP.status)):0});}
+// 원격 플레이어도 FPS와 무관한 시간 기반 보간을 사용합니다.
+for(const id in POS){
+  const p=POS[id],elapsed=Math.min(.22,Math.max(0,(nowFrame-(p.netAt||nowFrame))/1000));
+  const gx=p.tx+(p.m?(p.vx||0)*elapsed:0),gy=p.ty+(p.m?(p.vy||0)*elapsed:0);
+  let ex=gx-p.x,ey=gy-p.y,ed=Math.hypot(ex,ey);
+  const remoteStatus=R.players&&R.players[id]?R.players[id].status:null;
+  const maxStep=moveSpeedForStatus(remoteStatus)*REMOTE_CATCHUP*dt;
+  if(ed>maxStep&&ed>0){ex=ex/ed*maxStep;ey=ey/ed*maxStep;}
+  p.x+=ex;p.y+=ey;
+}
+drawPenguins();drawBodies();moveCamera();drawVision();drawStations();drawGuide();updateButtons();if(mapOpen)drawMapOverview();}
+function visionRadius(){const me=R.players[myId];
+if(me&&me.status==="out")return cfg("vision")*1.45;  // 유령 시야 (산 사람의 약 1.5배)
+let r=cfg("vision")+(me&&me.role==="imp"?IMP_VISION_BONUS:0);
+if(Date.now()<(R.blackoutUntil||0))r=Math.min(r,130);
+return r;}
+function moveCamera(){const vw=$("viewport").clientWidth,vh=$("viewport").clientHeight;
+const tx=vw/2-me2.x*ZOOM,ty=vh/2-me2.y*ZOOM;
+camX+=(tx-camX)*0.22;camY+=(ty-camY)*0.22;
+$("world").style.transform=`translate3d(${Math.round(camX)}px,${Math.round(camY)}px,0) scale(${ZOOM})`;}
+function drawVision(){const me=R&&R.players&&R.players[myId];
+if(me&&me.status==="out"){
+  // 유령은 넓게 보되 가장자리만 아주 옅게 어둡게 합니다
+  const gr=visionRadius()*ZOOM;
+  $("vision").style.background=
+    `radial-gradient(circle at 50% 50%, rgba(5,15,24,0) 0 ${Math.round(gr*0.78)}px,`+
+    ` rgba(5,15,24,.10) ${Math.round(gr*1.02)}px, rgba(5,15,24,.28) ${Math.round(gr*1.45)}px)`;
+  return;}
+const r=visionRadius()*ZOOM;
+$("vision").style.background=`radial-gradient(circle at 50% 50%, rgba(5,15,24,0) 0 ${Math.round(r*0.6)}px,`+
+` rgba(5,15,24,.5) ${Math.round(r*0.84)}px, rgba(5,15,24,.99) ${Math.round(r)}px)`;}
+let bodyEls={};
+function drawBodies(){
+  const vr=visionRadius()+50,seen={};
+  Object.entries(R.players).forEach(([id,p])=>{
+    if(!p.body||p.reported){return;}
+    if(dist(p.body,me2)>vr)return;
+    seen[id]=1;
+    let el=bodyEls[id];
+    if(!el){el=document.createElement("div");el.className="pg frozen bodymark";
+      el.innerHTML='<div class="body"><div class="tint"></div><div class="ink"></div></div>';
+      $("world").appendChild(el);bodyEls[id]=el;}
+    el.style.setProperty("--c",p.color||"#4D96FF");
+    el.style.transform=`translate3d(${p.body.x}px,${p.body.y}px,0)`;
+    el.style.zIndex=Math.round(p.body.y)-1;
+    const f=Math.floor(animNow/220)%4,S=SPR.draw;
+    const k=el.querySelector(".ink");k.style.backgroundPosition=(-f*S)+"px 0px";
+  });
+  Object.keys(bodyEls).forEach(id=>{if(!seen[id]){bodyEls[id].remove();delete bodyEls[id];}});
+}
+function drawPenguins(){const vr=visionRadius()+50,seen={},meP=R.players[myId];
+const iAmOut=(meP.status==="out");
+Object.entries(R.players).forEach(([id,p])=>{
+const pos=(id===myId)?me2:POS[id];
+if(!pos){removePg(id);return;}
+if(p.status==="out"&&!iAmOut&&id!==myId){
+  /* 방해꾼에게는 유령이 반투명으로 보입니다 */
+  const meP2=R.players[myId];
+  if(meP2&&meP2.role!=="imp"){removePg(id);return;}
+}
+if(id!==myId&&dist(pos,me2)>vr){removePg(id);return;}
+seen[id]=1;
+const el=getPg(id,p);
+el.style.transform=`translate3d(${Math.round(pos.x)}px,${Math.round(pos.y)}px,0)`;
+el.style.zIndex=Math.round(pos.y);
+const frozen=p.status==="frozen",ghost=p.status==="out";
+// 게임 중에는 역할과 관계없이 모두 같은 기본 펭귄 외형을 사용합니다.
+el.classList.toggle("frozen",frozen);
+el.classList.toggle("ghost",ghost&&!frozen);
+el.classList.remove("imp");
+const walking=!frozen&&(id===myId?me2.moving:pos.m);
+const d=(id===myId?me2.d:pos.d)||"down",face=(id===myId?me2.face:pos.face)||"left";
+setSprite(el,d,face,walking,frozen);});
+Object.keys(pgEls).forEach(id=>{if(!seen[id])removePg(id);});}
+function playColor(p){
+if(p&&p.role==="imp"&&p.disguiseColor&&Date.now()<Number(p.disguiseUntil||0))return p.disguiseColor;
+return (p&&p.color)||"#4D96FF";
+}
+function getPg(id,p){let el=pgEls[id];
+if(!el){el=document.createElement("div");el.className="pg"+(id===myId?" me":"");
+el.innerHTML='<div class="ring"></div><div class="body"><div class="tint"></div><div class="ink"></div></div>';
+$("world").appendChild(el);pgEls[id]=el;}
+el.style.setProperty("--c",playColor(p));return el;}
+function setSprite(el,d,face,walking,frozen){
+const S=SPR.draw,t=el.querySelector(".tint"),k=el.querySelector(".ink");
+let pos;
+if(frozen){const f=Math.floor(animNow/220)%4;pos=(-f*S)+"px 0px";}
+else{const row=SPR.rows[d==="side"?"side":d]||0;
+const f=walking?(1+Math.floor(animNow/(1000/SPR.fps))%(SPR.frames-1)):0;
+pos=(-f*S)+"px "+(-row*S)+"px";}
+t.style.webkitMaskPosition=pos;t.style.maskPosition=pos;k.style.backgroundPosition=pos;
+// 원본 side 행은 왼쪽을 보는 그림이므로 오른쪽 이동 때만 좌우 반전합니다.
+el.querySelector(".body").style.transform=(!frozen&&d==="side"&&face==="right")?"scaleX(-1)":"none";}
+function removePg(id){if(pgEls[id]){pgEls[id].remove();delete pgEls[id];}}
+
+/* ═══ 전체 지도 — M 키로 토글 ═══ */
+function setMapOpen(open){
+mapOpen=!!open;const ov=$("mapoverlay");if(ov)ov.classList.toggle("hide",!mapOpen);
+if(mapOpen){keys={};requestAnimationFrame(drawMapOverview);}
+}
+function toggleMap(){setMapOpen(!mapOpen);}
+function drawMapOverview(){
+if(!mapOpen||!R)return;const cv=$("mapoverview"),src=$("mapcv");if(!cv||!src)return;
+const c=cv.getContext("2d");if(!c)return;const W=cv.width,H=cv.height,sx=W/WORLD.w,sy=H/WORLD.h;
+c.clearRect(0,0,W,H);c.fillStyle="#06131C";c.fillRect(0,0,W,H);try{c.drawImage(src,0,0,W,H);}catch(e){}
+c.textAlign="center";c.textBaseline="middle";c.font="bold 13px sans-serif";
+ROOMS.forEach(r=>{const x=(r.x+r.w/2)*sx,y=(r.y+r.h/2)*sy;c.fillStyle="rgba(5,20,30,.62)";
+const tw=Math.max(42,c.measureText(r.name).width+12);c.fillRect(x-tw/2,y-9,tw,18);c.fillStyle="rgba(235,248,255,.88)";c.fillText(r.name,x,y);});
+const me=R.players&&R.players[myId];if(me){const list=me.role==="imp"?fakeAssignedList(me):assignedList(me);
+list.forEach(sid=>{const st=STATIONS.find(s=>s.id===sid);if(!st)return;const done=me.role==="imp"?fakeTaskDone(me,sid):taskDone(me,sid);
+const x=st.x*sx,y=st.y*sy;c.save();c.translate(x,y);c.rotate(Math.PI/4);c.fillStyle=done?"#63E6A8":"#FFD84D";
+c.strokeStyle="#071924";c.lineWidth=3;c.fillRect(-7,-7,14,14);c.strokeRect(-7,-7,14,14);c.restore();});}
+const px=me2.x*sx,py=me2.y*sy;c.beginPath();c.arc(px,py,9,0,Math.PI*2);c.fillStyle="#55D8FF";c.fill();
+c.lineWidth=3;c.strokeStyle="#FFFFFF";c.stroke();c.font="bold 12px sans-serif";c.textAlign="left";c.fillStyle="#fff";c.fillText("나",px+12,py);
+}
+function drawStations(){
+const me=R.players&&R.players[myId];if(!me)return;
+const per=cfg("perStation"),list=me.role==="imp"?fakeAssignedList(me):assignedList(me);
+STATIONS.forEach(st=>{const el=$("st-"+st.id);if(!el)return;
+  const on=list.includes(st.id);
+  const n=me.role==="imp"?fakeStCount(me,st.id):taskStCount(me,st.id);
+  const lit=n>=per;
+  // 각 사람의 화면에는 자기에게 배정된 미션 상태만 표시됩니다.
+  const state=!on?0:(lit?3:(n>0?2:1));
+  el.style.backgroundPosition=(-state*104)+"px "+(-el.dataset.dev*104)+"px";
+  el.classList.toggle("off",!on);
+  el.classList.toggle("on",on&&state===1);
+  el.classList.toggle("work",on&&state===2);
+  el.classList.toggle("lit",on&&lit);
+  el.querySelector(".stnum").textContent=on?(lit?"완료":n+" / "+per):"";
+});}
+function nearStation(){const me=R&&R.players&&R.players[myId];if(!me)return null;
+const list=me.role==="imp"?fakeAssignedList(me):assignedList(me);
+for(const st of STATIONS){
+  if(!list.includes(st.id)||dist(st,me2)>=STATION_RANGE)continue;
+  if(me.role==="imp"){if(!fakeTaskDone(me,st.id))return st;}
+  else if(!taskDone(me,st.id))return st;
+}
+return null;}
+function drawGuide(){const g=$("guide"),vw=$("viewport").clientWidth,vh=$("viewport").clientHeight;
+const me=R.players[myId];if(!me){g.classList.add("hide");return;}
+const list=me.role==="imp"?fakeAssignedList(me):assignedList(me);
+const left=STATIONS.filter(s=>list.includes(s.id)&&(me.role==="imp"?!fakeTaskDone(me,s.id):!taskDone(me,s.id)));
+if(!left.length){g.classList.add("hide");return;}
+left.sort((a,b)=>dist(a,me2)-dist(b,me2));const t=left[0];
+const dx=t.x-me2.x,dy=t.y-me2.y,d=Math.hypot(dx,dy);
+if(d<STATION_RANGE){g.classList.add("hide");return;}
+g.classList.remove("hide");
+const rad=Math.min(vw,vh)*0.32;
+g.style.left=(vw/2+dx/d*rad-15)+"px";g.style.top=(vh/2+dy/d*rad-18)+"px";
+g.textContent="🔸";}
+
+/* ═══ 버튼 ═══ */
+function updateButtons(){const me=R.players[myId];if(!me)return;
+const isGhost=me.status==="out";
+const alive=me.status==="alive";
+const canTask=(me.status==="alive"||me.status==="out");
+$("v-place").textContent=roomName(myRoomCache);
+
+// 유령도 미션을 직접 수행합니다. 신고/긴급회의/방해공작은 사용할 수 없습니다.
+$("b-task").classList.remove("hide");
+$("b-report").classList.toggle("hide",isGhost);
+$("b-emergency").classList.toggle("hide",isGhost);
+const st=nearStation();
+const wl=Math.max(0,(wrongUntil[st?st.id:""]||0)-Date.now());
+$("b-task").disabled=!canTask||!st||missionLocked()||wl>0;
+$("b-task").innerHTML=wl>0?Math.ceil(wl/1000)+"초":"미션";
+
+const imp=me.role==="imp";
+const showImpActions=imp&&alive;
+["b-freeze","b-sabotage"].forEach(b=>$(b).classList.toggle("hide",!showImpActions));
+const transformBtn=$("b-transform");
+const charge=Number(me.transformCharge)||0;
+transformBtn.classList.toggle("hide",!(showImpActions&&charge>0));
+transformBtn.disabled=!(showImpActions&&charge>0);
+if(showImpActions&&charge>0)transformBtn.innerHTML="위장<br>1회";
+
+if(isGhost)return;
+const body=nearFrozen();
+$("b-report").disabled=!alive||!body;
+$("b-emergency").disabled=!alive||me.usedEmergency;
+if(showImpActions){const t=freezeTarget();
+const cool=Math.max(0,cfg("freezeSec")*1000-(Date.now()-(me.lastFreeze||0)));
+$("b-freeze").disabled=!t||cool>0;
+$("b-freeze").innerHTML=cool>0?Math.ceil(cool/1000)+"초":"얼리기";
+const sc=Math.max(0,SAB_COOL-(Date.now()-(R.lastSab||0)));
+$("b-sabotage").disabled=sc>0;
+$("b-sabotage").innerHTML=sc>0?Math.ceil(sc/1000)+"초":"방해<br>공작";}}
+function nearFrozen(){return Object.entries(R.players).find(([id,p])=>p.body&&!p.reported
+&&dist(p.body,me2)<135);}
+function freezeTarget(){let best=null,bd=FREEZE_RANGE;
+Object.entries(R.players).forEach(([id,p])=>{
+if(id===myId||p.role==="imp"||p.status!=="alive")return;
+const pos=POS[id];if(!pos)return;
+const d=dist(pos,me2);if(d<bd){bd=d;best=[id,p];}});
+return best;}
+
+/* ═══ 미션 ═══ */
+$("b-task").onclick=()=>{
+const me=R.players[myId];
+if(!me||(me.status!=="alive"&&me.status!=="out"))return;
+const st=nearStation();if(!st)return;
+if(missionLocked()){toast("미션이 잠겼습니다");return;}
+curStation=st;submittingQuiz=false;newQuiz();
+const count=me.role==="imp"?fakeStCount(me,st.id):taskStCount(me,st.id);
+$("v-tasktitle").textContent=(me.role==="imp"?"가짜 미션 — ":"미션 — ")+roomName(st.room);
+$("v-qdots").textContent=Math.min(count+1,cfg("perStation"))+" / "+cfg("perStation");
+$("b-answer").disabled=false;
+$("quizpanel").classList.remove("hide");setTimeout(()=>$("i-answer").focus(),100);};
+$("b-closequiz").onclick=()=>{if(submittingQuiz)return;$("quizpanel").classList.add("hide");curStation=null;};
+$("b-answer").onclick=submitAnswer;
+$("i-answer").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();submitAnswer();}});
+async function submitAnswer(){
+if(!curQuiz||!curStation||submittingQuiz)return;
+const sid=curStation.id,per=cfg("perStation"),fb=$("v-fb");
+const v=parseFloat($("i-answer").value.replace(/\s/g,""));
+if(isNaN(v)){fb.className="fb bad";fb.textContent="숫자를 써 주세요";return;}
+if(Math.abs(v-curQuiz.ans)>=1e-6){
+  wrongUntil[sid]=Date.now()+WRONG_LOCK;
+  fb.className="fb bad";fb.textContent="틀렸어요. 10초 뒤에 다시 할 수 있어요";
+  submittingQuiz=true;$("b-answer").disabled=true;
+  setTimeout(()=>{submittingQuiz=false;$("quizpanel").classList.add("hide");curStation=null;$("b-answer").disabled=false;},1500);
+  return;
+}
+submittingQuiz=true;$("b-answer").disabled=true;fb.className="fb good";fb.textContent="정답 확인 중…";
+try{
+  // 역할 판정은 화면의 오래된 R 스냅샷이 아니라 Firebase의 최신 플레이어 데이터를 다시 확인합니다.
+  // 최신 역할을 다시 확인한 뒤 개인 progress만 수정합니다. 방해꾼 가짜 미션은 대원 전체 게이지에 절대 반영되지 않습니다.
+  const meSnap=await roomRef.child("players/"+myId).get();
+  const me=meSnap.val()||R.players[myId];
+  if(me.role==="imp"){
+    const ref=roomRef.child("players/"+myId+"/fakeTasks/"+sid);
+    const tr=await ref.transaction(n=>{n=Number(n)||0;if(n>=per)return;return n+1;});
+    const finalCount=Number(tr.snapshot.val())||0;
+    if(finalCount>=per){
+      // 첫 번째 가짜 미션 완수 때만 게임당 1회의 위장권을 원자적으로 지급합니다.
+      const awardRef=roomRef.child("players/"+myId+"/transformAwarded");
+      const award=await awardRef.transaction(v=>v?undefined:true);
+      if(award.committed){
+        await roomRef.child("players/"+myId+"/transformCharge").set(1);
+        // Firebase 반영을 기다리지 않아도 버튼이 즉시 나타나도록 로컬 상태도 맞춥니다.
+        if(R&&R.players&&R.players[myId]){R.players[myId].transformAwarded=true;R.players[myId].transformCharge=1;}
+        updateButtons();
+        fb.textContent="가짜 미션 완료! 위장 스킬 1회를 획득했어요!";
+        toast("위장 스킬이 열렸어요! 다른 색으로 1회 변신할 수 있습니다.",3200);
+      }else fb.textContent="가짜 미션 완료!";
+      $("v-qdots").textContent=per+" / "+per;
+      setTimeout(()=>{submittingQuiz=false;$("quizpanel").classList.add("hide");curStation=null;$("b-answer").disabled=false;},1000);
+    }else if(tr.committed){
+      fb.textContent="정답! 다음 문제";
+      $("v-qdots").textContent=(finalCount+1)+" / "+per;
+      setTimeout(()=>{if(!curStation)return;newQuiz();submittingQuiz=false;$("b-answer").disabled=false;$("i-answer").focus();},450);
+    }else{
+      fb.textContent="이 가짜 미션은 이미 끝났어요";
+      setTimeout(()=>{submittingQuiz=false;$("quizpanel").classList.add("hide");curStation=null;$("b-answer").disabled=false;},800);
+    }
+    return;
+  }
+
+  // 살아있는 대원과 유령 대원의 정답은 자기 개인 미션에만 반영됩니다.
+  const ref=roomRef.child("players/"+myId+"/tasks/"+sid);
+  const tr=await ref.transaction(n=>{n=Number(n)||0;if(n>=per)return;return n+1;});
+  const finalCount=Number(tr.snapshot.val())||0;
+  if(tr.committed)await roomRef.child("players/"+myId+"/solved").transaction(n=>(Number(n)||0)+1);
+  if(finalCount>=per){
+    fb.className="fb good";fb.textContent=me.status==="out"?"유령 미션 완료! 내 할당량이 채워졌어요!":"미션 완료! 내 할당량이 채워졌어요!";
+    $("v-qdots").textContent=per+" / "+per;
+    setTimeout(()=>{submittingQuiz=false;$("quizpanel").classList.add("hide");curStation=null;$("b-answer").disabled=false;},900);
+  }else if(tr.committed){
+    fb.className="fb good";fb.textContent="정답! 다음 문제";
+    $("v-qdots").textContent=(finalCount+1)+" / "+per;
+    setTimeout(()=>{if(!curStation)return;newQuiz();submittingQuiz=false;$("b-answer").disabled=false;$("i-answer").focus();},450);
+  }else{
+    fb.className="fb good";fb.textContent="이 미션은 이미 완료했어요!";
+    setTimeout(()=>{submittingQuiz=false;$("quizpanel").classList.add("hide");curStation=null;$("b-answer").disabled=false;},900);
+  }
+}catch(err){
+  console.error("mission transaction failed",err);
+  fb.className="fb bad";fb.textContent="연결이 잠시 끊겼어요. 다시 확인해 주세요";
+  submittingQuiz=false;$("b-answer").disabled=false;
+}
+}
+
+/* ═══ 방해공작 ═══ */
+$("b-sabotage").onclick=()=>{if(Date.now()-(R.lastSab||0)<SAB_COOL){toast("아직 준비되지 않았어요");return;}
+$("sabpanel").classList.remove("hide");};
+$("b-sabclose").onclick=()=>$("sabpanel").classList.add("hide");
+document.querySelectorAll("[data-sab]").forEach(b=>{b.onclick=()=>{
+if(Date.now()-(R.lastSab||0)<SAB_COOL){toast("아직 준비되지 않았어요");return;}
+const k=b.dataset.sab,up={lastSab:Date.now()};
+if(k==="dark")up.blackoutUntil=Date.now()+BLACKOUT_TIME;
+if(k==="lock")up.missionLockUntil=Date.now()+MISSLOCK_TIME;
+roomRef.update(up);$("sabpanel").classList.add("hide");};});
+
+/* ═══ 변신 스킬 (방해꾼 가짜 미션 보상, 게임당 1회) ═══ */
+$("b-transform").onclick=async()=>{
+  const me=R.players&&R.players[myId];
+  if(!me||me.role!=="imp"||me.status!=="alive"||Number(me.transformCharge||0)<1)return;
+  const chargeRef=roomRef.child("players/"+myId+"/transformCharge");
+  const used=await chargeRef.transaction(n=>(Number(n)||0)>0?0:undefined);
+  if(!used.committed)return;
+  const colors=Object.entries(R.players||{}).filter(([id,p])=>id!==myId&&p.color&&p.color!==me.color).map(([,p])=>p.color);
+  const fallback=COLORS.filter(c=>c!==me.color);
+  const pool=colors.length?colors:fallback;
+  const disguiseColor=pool[Math.floor(Math.random()*pool.length)]||"#4D96FF";
+  await roomRef.child("players/"+myId).update({disguiseColor:disguiseColor,disguiseUntil:Date.now()+20000});
+  toast("20초 동안 다른 색으로 변신합니다!",2600);
+};
+
+/* ═══ 얼리기 / 신고 / 회의 ═══ */
+$("b-freeze").onclick=()=>{const me=R.players[myId];
+if(Date.now()-(me.lastFreeze||0)<cfg("freezeSec")*1000){toast("아직 힘을 모으는 중이에요");return;}
+const t=freezeTarget();if(!t){toast("가까이 가야 얼릴 수 있어요");return;}
+const others=Object.entries(R.players).filter(([id,p])=>id!==myId&&id!==t[0]
+&&p.status==="alive"&&POS[id]&&dist(POS[id],me2)<WITNESS_RANGE);
+const bp=POS[t[0]]||me2;
+roomRef.update({["players/"+t[0]+"/status"]:"out",
+["players/"+t[0]+"/body"]:{x:Math.round(bp.x),y:Math.round(bp.y),room:myRoomCache},
+["players/"+t[0]+"/reported"]:false,
+["players/"+t[0]+"/frozenAt"]:myRoomCache,["players/"+myId+"/lastFreeze"]:Date.now()});
+toast(others.length?t[1].name+"을(를) 얼렸다! 근처에 누가 있었다…":t[1].name+"을(를) 얼렸다!",3000);};
+$("b-report").onclick=async()=>{const me=R.players[myId];
+if(me.status!=="alive"){toast("움직일 수 없는 상태예요");return;}
+const body=nearFrozen();if(!body){toast("근처에 얼어붙은 친구가 없어요");return;}
+const reason=me.name+"님이 "+roomName(body[1].frozenAt)+"에서 "+body[1].name+"님을 발견";
+// 신고되는 순간 시체 위치를 지워서 맵에서 바로 사라지게 합니다.
+await roomRef.update({["players/"+body[0]+"/reported"]:true,["players/"+body[0]+"/body"]:null});
+startMeeting(reason);};
+$("b-emergency").onclick=()=>{const me=R.players[myId];
+if(me.status!=="alive"){toast("움직일 수 없는 상태예요");return;}
+if(me.usedEmergency){toast("긴급회의는 한 사람당 한 번이에요");return;}
+roomRef.child("players/"+myId+"/usedEmergency").set(true);
+startMeeting(me.name+"님이 긴급회의를 소집");};
+function startMeeting(reason){
+const up={phase:"meeting",blackoutUntil:0,missionLockUntil:0,
+meeting:{reason:reason,endsAt:Date.now()+cfg("meetingSec")*1000,votes:null}};
+Object.keys(R.players||{}).forEach(id=>{up["players/"+id+"/body"]=null;up["players/"+id+"/disguiseColor"]=null;up["players/"+id+"/disguiseUntil"]=0;});
+roomRef.update(up);}
+function vote(t){const me=R.players[myId];
+if(me.status==="alive")roomRef.child("meeting/votes/"+myId).set(t);}
+
+/* ═══ 방장 판정 ═══ */
+function hostLoop(){if(!R||R.host!==myId||!R.players)return;
+const ps=Object.entries(R.players);
+if(R.phase==="meeting"&&R.meeting){const votes=R.meeting.votes||{};
+const ids=ps.filter(([,p])=>p.status==="alive").map(([id])=>id);
+if((ids.length&&ids.every(id=>votes[id]))||Date.now()>R.meeting.endsAt)tally(votes);
+return;}
+if(R.phase==="play"){
+const aliveImp=ps.filter(([,p])=>p.role==="imp"&&p.status==="alive").length;
+const aliveCrew=ps.filter(([,p])=>p.role==="crew"&&p.status==="alive").length;
+if(R.endsAt&&Date.now()>=R.endsAt)finish("imp","시간이 모두 끝났다. 방해꾼 승리!");
+else if(allCrewMissionsDone())finish("crew","모든 대원이 각자 배정된 미션을 완료했다!");
+else if(aliveImp===0)finish("crew","방해꾼을 모두 찾아냈다!");
+else if(aliveCrew<=aliveImp)finish("imp","살아있는 대원이 너무 적다…");}}
+function tally(votes){const c={};Object.values(votes).forEach(t=>{if(t!=="skip")c[t]=(c[t]||0)+1;});
+let top=null,max=0,tie=false;
+Object.entries(c).forEach(([id,n])=>{if(n>max){top=id;max=n;tie=false;}else if(n===max)tie=true;});
+const up={phase:"play",meeting:null,blackoutUntil:0};let msg;
+if(!top||tie||max===0)msg="표가 갈려 아무도 내보내지 않았다";
+else{up["players/"+top+"/status"]="out";
+msg=R.players[top].name+"님을 내보냈다. "+(R.players[top].role==="imp"?"방해꾼이었다!":"방해꾼이 아니었다…");}
+up["lastVoteMsg"]=msg+"|"+Date.now();roomRef.update(up);}
+function finish(w,m){roomRef.update({phase:"result",result:{winner:w,msg:m}});}
+$("b-again").onclick=()=>{if(R.host!==myId){toast("선생님이 다시 시작해요");return;}
+const up={phase:"lobby",result:null,meeting:null,lastVoteMsg:null};
+Object.keys(R.players).forEach(id=>{up["players/"+id+"/status"]="alive";
+up["players/"+id+"/room"]=null;up["players/"+id+"/solved"]=0;
+up["players/"+id+"/reported"]=false;
+up["players/"+id+"/body"]=null;up["players/"+id+"/usedEmergency"]=false;
+up["players/"+id+"/tasks"]=null;up["players/"+id+"/fakeTasks"]=null;
+up["players/"+id+"/assignedStations"]=null;up["players/"+id+"/fakeAssignedStations"]=null;
+up["players/"+id+"/transformAwarded"]=false;
+up["players/"+id+"/transformCharge"]=0;up["players/"+id+"/disguiseColor"]=null;up["players/"+id+"/disguiseUntil"]=0;});
+roomRef.update(up);};
+
+/* ═══ 화면 ═══ */
+function showFreezeReveal(){
+  const pop=$("freeze-reveal");if(!pop)return;
+  if(freezeRevealTimer)clearTimeout(freezeRevealTimer);
+  pop.classList.remove("hide");
+  freezeRevealTimer=setTimeout(()=>{pop.classList.add("hide");freezeRevealTimer=null;},1800);
+}
+function checkPersonalStatusFx(me){
+  const prev=lastMyStatus;
+  if(prev!==null&&prev==="alive"&&me.status==="out"&&me.body&&R.phase==="play")showFreezeReveal();
+  lastMyStatus=me.status;
+}
+function render(){if(!R)return;
+isHost=(R.host===myId);
+const me=R.players&&R.players[myId];if(!me)return;
+checkPersonalStatusFx(me);
+if(R.phase!==lastPhase){lastPhase=R.phase;
+if(R.phase==="lobby"){popShown=false;wrongUntil={};settingsFilled=false;submittingQuiz=false;lastMyStatus=me.status;
+$("freeze-reveal").classList.add("hide");
+}
+if(R.phase==="play"&&screenNow!=="game")startPlaying();}
+if(R.phase==="lobby"){renderLobby();show("s-lobby");screenNow="lobby";stopLoop();return;}
+if(R.phase==="result"){renderResult();show("s-result");screenNow="result";stopLoop();return;}
+if(R.phase==="meeting"){renderMeeting();show("s-meeting");screenNow="meeting";stopLoop();return;}
+if(R.phase==="play"){if(screenNow!=="game")startPlaying();
+renderHud();renderMissions();show("s-game");}}
+function stopLoop(){if(raf){cancelAnimationFrame(raf);raf=null;}
+setMapOpen(false);
+Object.keys(bodyEls).forEach(id=>{bodyEls[id].remove();delete bodyEls[id];});
+submittingQuiz=false;$("b-answer").disabled=false;
+$("quizpanel").classList.add("hide");$("sabpanel").classList.add("hide");$("freeze-reveal").classList.add("hide");
+if(freezeRevealTimer){clearTimeout(freezeRevealTimer);freezeRevealTimer=null;}}
+function startPlaying(){screenNow="game";setMapOpen(false);lastFrameAt=performance.now();
+const sp=spawnPoint();me2.x=sp.x;me2.y=sp.y;myRoomCache=null;
+camX=$("viewport").clientWidth/2-me2.x*ZOOM;camY=$("viewport").clientHeight/2-me2.y*ZOOM;
+posRef.child(myId).set({x:Math.round(me2.x),y:Math.round(me2.y),d:"down",face:"left",m:false});
+show("s-game");
+if(!popShown){popShown=true;showRolePop();}
+if(!raf)loop();}
+function showRolePop(){const me=R.players[myId],pop=$("rolepop");
+if(me.role==="imp"){$("v-popname").textContent="수학 방해꾼";$("v-popname").style.color="#FF8FB0";
+$("v-popmsg").textContent="대원을 얼리고 방해공작으로 미션 완료를 막으세요. 가짜 미션 1곳을 완료하면 위장 스킬 1회를 얻습니다.";
+const mates=Object.entries(R.players).filter(([id,p])=>p.role==="imp"&&id!==myId).map(([,p])=>p.name);
+$("v-popmates").textContent=mates.length?"같은 편: "+mates.join(", "):"";}
+else{$("v-popname").textContent="탐정 대원";$("v-popname").style.color="#8FD0EE";
+$("v-popmsg").textContent="내게 배정된 미션을 모두 완료해 팀 미션 게이지를 채우세요.";
+$("v-popmates").textContent="";}
+pop.classList.remove("hide");
+const close=()=>{pop.classList.add("hide");pop.removeEventListener("click",close);};
+pop.addEventListener("click",close);setTimeout(close,5000);}
+function renderHud(){const me=R.players[myId],chip=$("v-rolechip");
+chip.className="chip "+(me.role==="imp"?"imp":"crew");
+chip.textContent=me.status==="out"?"유령":(me.role==="imp"?"방해꾼":"대원");
+const ms=crewMissionStats();
+$("v-progbar").style.width=(ms.total?ms.done/ms.total*100:0)+"%";
+if($("v-progtext"))$("v-progtext").textContent=ms.done+" / "+ms.total;
+const t=$("v-gametimer");
+if(R.endsAt){const left=Math.max(0,R.endsAt-Date.now());
+t.textContent=String(Math.floor(left/60000)).padStart(2,"0")+":"+String(Math.floor(left%60000/1000)).padStart(2,"0");
+t.style.color=left<60000?"#FF9AB5":"#BFE0F2";}
+const w=$("warn");let msg="";
+const ghostNow=me.status==="out";
+if(!ghostNow&&Date.now()<(R.blackoutUntil||0))msg="정전! "+Math.ceil((R.blackoutUntil-Date.now())/1000)+"초";
+else if(missionLocked())msg="미션 잠김 "+Math.ceil((R.missionLockUntil-Date.now())/1000)+"초";
+w.textContent=msg;w.classList.toggle("hide",!msg);}
+function renderMissions(){
+const me=R.players&&R.players[myId];if(!me){$("missions").classList.add("hide");return;}
+const imp=me.role==="imp",list=imp?fakeAssignedList(me):assignedList(me);
+if(!list.length){$("missions").classList.add("hide");return;}
+$("missions").classList.remove("hide");
+$("v-mtitle").textContent=imp?"가짜 미션":"내 미션";
+const byRoom={};
+list.forEach(sid=>{const st=STATIONS.find(s=>s.id===sid);if(!st)return;
+  const r=byRoom[st.room]=byRoom[st.room]||{n:0,done:0};r.n++;
+  if(imp?fakeTaskDone(me,sid):taskDone(me,sid))r.done++;
+});
+const myDone=Object.values(byRoom).reduce((a,v)=>a+v.done,0);
+let html=Object.entries(byRoom).map(([rid,v])=>
+`<div class="m ${v.done===v.n?'ok':''}">${v.done===v.n?'✅':'▫'} ${roomName(rid)} ${v.done}/${v.n}</div>`).join("");
+html+=`<div class="m" style="margin-top:5px;color:#FFD84D">내 미션 ${myDone} / ${list.length}</div>`;
+if(imp){
+  html+=`<div class="m" style="margin-top:3px;color:#9FC6DE">가짜 미션은 전체 게이지에 반영되지 않음</div>`;
+  if(Number(me.transformCharge||0)>0)html+=`<div class="m" style="color:#7FFFC0">위장 스킬 준비 완료!</div>`;
+  else if(me.transformAwarded)html+=`<div class="m" style="color:#9FC6DE">위장 스킬 사용 완료</div>`;
+}else{const all=crewMissionStats();html+=`<div class="m" style="color:#9FC6DE">전체 ${all.done} / ${all.total}</div>`;}
+$("v-mlist").innerHTML=html;}
+function pengHTML(p){return `<span class="peng" style="background-color:${p.color};
+-webkit-mask-image:url('images/penguin-mask.png');mask-image:url('images/penguin-mask.png')"></span>`;}
+function renderLobby(){$("v-code").textContent=roomCode;
+const ps=Object.entries(R.players||{});
+$("v-count").textContent=ps.length+"명 대기 중";
+$("v-lobbylist").innerHTML=ps.map(([id,p])=>`<div class="pitem">${pengHTML(p)}
+<span class="nm">${esc(p.name)}</span>
+${id===R.host?'<span class="tag host">방장</span>':''}
+${id===myId?'<span class="tag me">나</span>':''}</div>`).join("");
+$("v-hostpanel").classList.toggle("hide",!isHost);
+$("v-invite").classList.toggle("hide",!isHost);
+$("v-waitmsg").classList.toggle("hide",isHost);
+if(isHost){$("v-link").textContent=inviteURL();
+const maxImp=maxImpostersFor(ps.length);
+const impInput=$("i-imp");
+impInput.max=maxImp;
+if(!settingsFilled){settingsFilled=true;
+let initialImp=parseInt(cfg("imposters"),10);
+if(!Number.isFinite(initialImp))initialImp=recommendedImpostersFor(ps.length);
+impInput.value=Math.max(1,Math.min(maxImp,initialImp));$("i-station").value=cfg("stationCount");
+$("i-per").value=cfg("perStation");$("i-min").value=cfg("gameMin");
+$("i-meet").value=cfg("meetingSec");$("i-cool").value=cfg("freezeSec");}
+const nowImp=parseInt(impInput.value,10)||1;
+if(nowImp>maxImp)impInput.value=maxImp;
+$("v-startmsg").textContent=ps.length<4?"4명 이상이면 시작할 수 있어요 · 4~7명은 방해꾼 1명 권장"
+:"현재 "+ps.length+"명 · 방해꾼 1~"+maxImp+"명 설정 가능 · "+recommendedImpostersFor(ps.length)+"명 권장";
+if(impMode==="pick"){impPicks=impPicks.filter(id=>R.players&&R.players[id]);
+$("v-picklist").innerHTML=ps.map(([id,p])=>`
+<div class="pitem pick ${impPicks.includes(id)?'picked':''}" data-pick="${id}">
+${pengHTML(p)}<span class="nm">${esc(p.name)}</span>
+${impPicks.includes(id)?'<span class="tag" style="background:var(--alert);color:#fff">방해꾼</span>':''}
+</div>`).join("");
+$("v-picklist").querySelectorAll("[data-pick]").forEach(el=>el.onclick=()=>togglePick(el.dataset.pick));}
+if(!hostTimer)hostTimer=setInterval(hostLoop,1000);}}
+function renderMeeting(){const me=R.players[myId];
+$("v-meetreason").textContent=R.meeting.reason||"";
+const votes=R.meeting.votes||{},myVote=votes[myId];
+const alive=Object.entries(R.players).filter(([,p])=>p.status==="alive");
+$("v-votelist").innerHTML=alive.map(([id,p])=>{
+const n=Object.values(votes).filter(v=>v===id).length;
+return `<div class="pitem" data-vote="${id}" role="button" tabindex="0">${pengHTML(p)}
+<span class="nm">${esc(p.name)}</span>${myVote===id?'<span class="tag me">내 표</span>':''}
+<span class="tag">${n}표</span></div>`;}).join("")
++`<div class="pitem" data-vote="skip" role="button" tabindex="0">
+<span class="peng" style="background:var(--ice-2)"></span><span class="nm">기권</span>
+${myVote==="skip"?'<span class="tag me">내 표</span>':''}
+<span class="tag">${Object.values(votes).filter(v=>v==="skip").length}표</span></div>`;
+$("v-votelist").querySelectorAll("[data-vote]").forEach(el=>el.onclick=()=>vote(el.dataset.vote));
+$("v-votemsg").textContent=(me.status!=="alive")?"움직일 수 없는 사람은 투표할 수 없어요"
+:myVote?"투표 완료. 바꾸려면 다시 누르세요":"한 명을 눌러 투표하세요";}
+function renderResult(){const w=R.result.winner,card=$("v-resultcard");
+card.className="rolecard "+(w==="crew"?"crew":"imp");
+$("v-resulttitle").textContent=w==="crew"?"대원 승리!":"방해꾼 승리";
+$("v-resultmsg").textContent=R.result.msg||"";
+$("v-resultlist").innerHTML=Object.entries(R.players).map(([id,p])=>`<div class="pitem">${pengHTML(p)}
+<span class="nm">${esc(p.name)}</span>
+<span class="tag" style="${p.role==='imp'?'background:var(--alert);color:#fff':''}">${p.role==='imp'?'방해꾼':'대원'}</span>
+<span class="tag">${p.solved||0}문제</span></div>`).join("");}
+
+/* ═══ 주기 ═══ */
+let lastMsgSeen=null;
+function tickUI(){if(!R)return;
+if(isHost&&!hostTimer)hostTimer=setInterval(hostLoop,1000);
+if(R.phase==="meeting"&&R.meeting){const left=Math.max(0,R.meeting.endsAt-Date.now());
+$("v-meettimer").textContent=String(Math.floor(left/60000)).padStart(2,"0")+":"
++String(Math.floor(left%60000/1000)).padStart(2,"0");}
+if(R.phase==="play"&&screenNow==="game"){renderHud();renderMissions();}
+if(R.lastVoteMsg&&R.lastVoteMsg!==lastMsgSeen){lastMsgSeen=R.lastVoteMsg;
+if(screenNow==="game")toast(R.lastVoteMsg.split("|")[0],3500);}}
+boot();
+</script>
+</body>
+</html>
