@@ -1,0 +1,195 @@
+/* =====================================================================
+   modes.css — 게임 모드(얼음땡 · 어몽어스) · 교사 화면 · 환경설정 · 대기 화면
+   ===================================================================== */
+
+/* ── 공통 ── */
+.btn.danger { background: #5a1520; border-color: #ff5a6a; }
+.btn.danger:hover:not(:disabled) { box-shadow: 0 0 0 3px rgba(255, 90, 106, .3); }
+.modal-actions { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; margin-top: 12px; }
+
+/* ── 메인 화면 ── */
+.title-actions .btn.primary { margin-top: 2px; }
+
+/* ── 설정 화면 (모드별) ── */
+.set-section { margin-top: 6px; padding: 6px 10px; border-radius: 10px; font-weight: 900; font-size: 15px; background: rgba(76, 201, 240, .12); color: #cfefff; }
+.set-section.mode.FREEZE_TAG { background: rgba(125, 220, 255, .16); color: #d8f6ff; }
+.set-section.mode.AMONG_US { background: rgba(179, 136, 255, .18); color: #eadcff; }
+.set-mode-desc { font-size: 14px; padding: 8px 10px; border-radius: 10px; background: rgba(255, 255, 255, .05); color: #e3ecff; }
+.set-extra { border: 1px dashed var(--line); border-radius: 12px; padding: 6px 10px; }
+.set-extra > summary { cursor: pointer; font-weight: 700; font-size: 15px; color: var(--muted); padding: 4px 0; }
+.set-extra[open] > summary { margin-bottom: 8px; }
+.set-extra .set-row { margin-bottom: 8px; }
+
+/* ── 대기방 ── */
+.lobby-head { flex-wrap: wrap; }
+.lobby-mode { flex: 1 1 260px; display: flex; flex-direction: column; gap: 2px; padding: 8px 14px; border-radius: 14px; border: 2px solid var(--line); background: rgba(255, 255, 255, .04); }
+.lobby-mode b { font-family: "Jua", sans-serif; font-weight: 400; font-size: 26px; }
+.lobby-mode span { font-size: 13px; color: var(--muted); }
+.lobby-mode.FREEZE_TAG { border-color: #7ddcff; background: rgba(125, 220, 255, .1); }
+.lobby-mode.FREEZE_TAG b { color: #bff0ff; }
+.lobby-mode.AMONG_US { border-color: #b388ff; background: rgba(179, 136, 255, .12); }
+.lobby-mode.AMONG_US b { color: #e3d4ff; }
+.lobby-side { margin-left: auto; text-align: right; }
+.lobby-side .lobby-count { margin-left: 0; }
+.lobby-teacher { font-size: 13px; color: var(--good); }
+.lobby-teacher.off { color: var(--yellow); }
+.lobby-mycolor { margin: 12px 0 0; font-size: 15px; }
+.lobby-mycolor small { color: var(--muted); }
+.player-card.no-color { opacity: .7; }
+.settings-summary { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; }
+.sum-row { display: flex; justify-content: space-between; gap: 8px; padding: 6px 10px; border-radius: 10px; background: rgba(255, 255, 255, .04); font-size: 15px; }
+.sum-row span { color: var(--muted); }
+.teacher-tools { display: flex; gap: 8px; flex-wrap: wrap; margin-right: auto; }
+.pm-list { display: grid; gap: 6px; margin: 10px 0 14px; max-height: 55vh; overflow: auto; }
+.pm-row { display: flex; align-items: center; gap: 10px; padding: 4px 8px; border-radius: 12px; background: rgba(255, 255, 255, .04); }
+.pm-name { flex: 1; }
+.pm-name small { color: var(--muted); }
+.pin-row { display: grid; grid-template-columns: 1fr auto; gap: 10px; margin: 12px 0 4px; }
+#teacher-pin { text-align: center; letter-spacing: 8px; }
+
+/* ── 역할 공개 ── */
+#screen-role.tagger { background: radial-gradient(circle at 50% 40%, #8a3d10 0%, #2a1206 70%); }
+.role-mode { font-size: 16px; color: #d9e6ff; margin-bottom: 6px; opacity: .85; }
+
+/* ── 게임 HUD ── */
+.hud-me { margin-top: 6px; font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+.hud-me i { display: inline-block; width: 14px; height: 14px; border-radius: 50%; border: 2px solid #fff; }
+.hud-me small { color: var(--muted); font-weight: 400; }
+.role-tag.tag { background: #b3531a; }
+.st-btn { right: calc(max(10px, env(safe-area-inset-right)) + 54px) !important; }
+.hud-tr { right: calc(max(10px, env(safe-area-inset-right)) + 108px) !important; }
+.hud-br { grid-auto-flow: row dense; }
+.act.big { grid-column: 1 / span 2; }
+.act.catch { border-color: #ff8a3d; }
+.act.catch.big { width: 96px; height: 96px; font-size: 14px; }
+.act.catch.big b { font-size: 32px; }
+.act.catch.ready { background: rgba(110, 45, 10, .92); box-shadow: 0 0 24px #ff8a3d; animation: readyPulse 1s infinite; opacity: 1; filter: none; }
+.act.catch.cooling em { color: #ffd9bf; }
+.act.sab { border-color: #b388ff; background: rgba(60, 20, 90, .85); }
+.act.sab.on { box-shadow: 0 0 20px #b388ff; background: rgba(100, 40, 150, .95); }
+.act.rescue { position: relative; overflow: hidden; border-color: #ffe066; --p: 0; }
+.act.rescue::before { content: ""; position: absolute; inset: 0; background: conic-gradient(rgba(255, 224, 102, .75) calc(var(--p) * 360deg), transparent 0); pointer-events: none; }
+.act.rescue > * { position: relative; }
+.ability-bar { display: none !important; }
+body.sabotage-open .ability-bar { display: flex !important; }
+.status-banner.protect { background: rgba(10, 70, 50, .88); color: #d9fff0; border: 2px solid #7df9c1; font-size: 22px; }
+.status-banner.tagger { background: rgba(110, 45, 10, .88); color: #ffe6d4; border: 2px solid #ff8a3d; font-size: 22px; }
+
+/* ── 긴급회의 카드: 색 이름 ── */
+.mt-color { font-size: 12px; color: var(--muted); }
+
+/* ── 게임 종료 (술래 승리) ── */
+#screen-gameover.win-tagger { background: radial-gradient(circle at 50% 30%, #bdf2ff 0%, #1a5f8a 45%, #06121f 100%); }
+.win-tagger .go-title { color: #e9fbff; text-shadow: 0 0 24px #7ddcff; }
+.tag-sab.tagger { background: #b3531a; }
+#screen-result.teacher .rs-tiles, #screen-result.teacher .rs-sub, #screen-result.teacher .rs-row, #screen-result.teacher .rs-review-box, #screen-result.teacher #btn-go-leave { display: none; }
+#screen-result.teacher .rs-head h1::after { content: " · 선생님 화면"; font-size: .6em; color: var(--muted); }
+
+/* ── 다음 게임 기다리기 ── */
+#screen-waiting { align-items: center; justify-content: center; padding: 16px; background: radial-gradient(ellipse at 50% 30%, #16224a, #05070f 75%); }
+.wait-card { width: min(520px, 100%); text-align: center; background: rgba(10, 16, 34, .86); border: 2px solid rgba(76, 201, 240, .35); border-radius: 24px; padding: 26px; }
+.wait-icon { font-size: 54px; animation: pulse 2s infinite; }
+.wait-card h2 { font-family: "Jua", sans-serif; font-weight: 400; font-size: 32px; margin: 6px 0; }
+.wait-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 12px; }
+
+/* ── 교사 관전 화면 ── */
+#screen-teacher { background: #070b16; padding: 10px; }
+.tv-wrap { width: 100%; display: flex; flex-direction: column; gap: 10px; min-height: 0; }
+.tv-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.tv-code { font-size: 16px; color: var(--muted); }
+.tv-code b { font-family: "Jua", sans-serif; font-weight: 400; font-size: 30px; color: var(--yellow); letter-spacing: 4px; }
+.tv-mode { font-family: "Jua", sans-serif; font-size: 24px; }
+.tv-phase { font-weight: 900; color: #cfefff; min-width: 140px; }
+.tv-timer { font-size: 28px; }
+.tv-repair { width: min(260px, 40vw); }
+.tv-repair #tv-repair-fill { height: 100%; width: 0; background: linear-gradient(90deg, #39d98a, #4cc9f0); transition: width .6s; }
+.tv-btns { margin-left: auto; display: flex; gap: 6px; flex-wrap: wrap; }
+.tv-btns .btn.on { background: #1f4f7a; border-color: var(--neon); }
+.tv-body { flex: 1; display: grid; grid-template-columns: 1fr minmax(240px, 300px); gap: 10px; min-height: 0; height: calc(100vh - 110px); }
+.tv-map-wrap { position: relative; display: flex; align-items: center; justify-content: center; min-height: 0; overflow: hidden; border-radius: 14px; background: #04070f; }
+.tv-note { position: absolute; left: 10px; bottom: 10px; right: 10px; font-size: 13px; color: var(--muted); text-align: center; pointer-events: none; }
+.tv-note:empty { display: none; }
+.tv-side { overflow: auto; padding: 10px; }
+.tv-side h3 { margin: 0 0 8px; font-size: 16px; color: var(--text); }
+.tv-row { display: flex; align-items: center; gap: 8px; padding: 4px 6px; border-radius: 10px; background: rgba(255, 255, 255, .04); margin-bottom: 4px; font-size: 14px; }
+.tv-row.offline { opacity: .6; }
+.tv-row.gone { opacity: .4; }
+.tv-info { flex: 1; min-width: 0; }
+.tv-info small { color: var(--muted); }
+.tv-st { font-size: 13px; }
+.tv-role { font-size: 11px; padding: 1px 6px; border-radius: 6px; font-weight: 700; background: #1d4f86; }
+.tv-role.saboteur { background: #6a2a96; }
+.tv-role.tagger { background: #b3531a; }
+@media (max-width: 800px) {
+  .tv-body { grid-template-columns: 1fr; height: auto; }
+  .tv-map-wrap { height: 55vh; }
+}
+
+/* ── ⚙ 환경설정 ── */
+.settings-modal .modal-card { width: min(560px, 100%); }
+.vol-row { display: grid; grid-template-columns: 120px 1fr 44px; gap: 10px; align-items: center; margin: 10px 0; font-weight: 700; }
+.vol-row input[type="range"] { min-height: 0; padding: 0; height: 32px; accent-color: var(--neon); background: transparent; border: none; box-shadow: none; }
+.vol-row output { text-align: right; font-family: "Jua", sans-serif; font-size: 20px; color: var(--yellow); }
+.toggle-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 6px 0 12px; }
+.toggle-row .chip:not(.on) { opacity: .6; }
+.st-controls { border: 1px dashed var(--line); border-radius: 12px; padding: 6px 10px; margin-bottom: 12px; }
+.st-controls summary { cursor: pointer; font-weight: 700; }
+.st-keys { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 6px; }
+.st-keys th, .st-keys td { text-align: left; padding: 4px 6px; border-top: 1px solid rgba(255, 255, 255, .08); vertical-align: top; }
+.st-keys th { white-space: nowrap; color: #cfefff; }
+.st-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.confirm-modal { z-index: 60; }
+.small-card { width: min(420px, 100%); text-align: center; }
+.confirm-text { font-size: 20px; font-weight: 900; margin: 6px 0 4px; }
+.confirm-modal .modal-actions { justify-content: center; }
+
+@media (max-height: 520px) {
+  .act.catch.big { width: 80px; height: 80px; }
+  .vol-row { margin: 4px 0; }
+}
+@media (max-width: 700px) {
+  .settings-summary { grid-template-columns: 1fr; }
+  .hud-tr { width: min(200px, 30vw); }
+}
+
+/* [방해] 버튼으로 여는 정전·문 잠금·위장: 오른쪽 아래 버튼들 왼쪽에 한 줄로 */
+.ability-bar { right: calc(max(12px, env(safe-area-inset-right)) + 176px) !important; bottom: calc(max(12px, env(safe-area-inset-bottom)) + 14px) !important; }
+.door-picker { right: calc(max(12px, env(safe-area-inset-right)) + 176px) !important; bottom: calc(max(12px, env(safe-area-inset-bottom)) + 92px) !important; }
+@media (max-height: 520px) {
+  .ability-bar { right: calc(max(12px, env(safe-area-inset-right)) + 150px) !important; }
+  .door-picker { right: calc(max(12px, env(safe-area-inset-right)) + 150px) !important; bottom: calc(max(12px, env(safe-area-inset-bottom)) + 76px) !important; }
+}
+
+/* 낮은 화면(휴대폰 가로)에서 환경설정이 한 화면에 들어가도록 */
+@media (max-height: 520px) {
+  .settings-modal .modal-card { padding: 10px 16px; }
+  .settings-modal h2 { font-size: 20px; margin: 0 0 4px; }
+  .settings-modal .vol-row { margin: 0; font-size: 15px; }
+  .settings-modal .vol-row input[type="range"] { height: 26px; }
+  .settings-modal .toggle-row { margin: 4px 0 6px; }
+  .settings-modal .st-controls { margin-bottom: 6px; padding: 2px 10px; }
+  .settings-modal .st-actions .btn { min-height: 42px; font-size: 15px; padding: 6px 12px; }
+}
+
+/* ── 초대 링크 · QR (교사 대기방) ── */
+.lobby-invite { display: flex; align-items: center; gap: 8px; }
+.lobby-qr { width: 72px; height: 72px; border-radius: 8px; cursor: pointer; background: #fff; box-shadow: 0 0 0 2px var(--line); }
+.invite-btns { display: grid; gap: 6px; }
+.invite-btns .btn { min-height: 34px; font-size: 14px; padding: 4px 10px; white-space: nowrap; }
+.invite-hint { margin: 8px 0 0; font-size: 15px; color: var(--good); min-height: 0; }
+.invite-hint:empty { display: none; }
+.qr-card { text-align: center; }
+.qr-code-no { font-size: 18px; margin: 6px 0; }
+.qr-code-no b { font-family: "Jua", sans-serif; font-weight: 400; font-size: 34px; color: var(--yellow); letter-spacing: 6px; }
+.qr-big { display: block; margin: 8px auto; border-radius: 12px; }
+.qr-url { font-size: 14px; min-height: 40px; text-align: center; }
+
+/* ── 방해꾼 직접 지정 (교사) ── */
+.sp-status { font-weight: 900; color: var(--yellow); margin: 6px 0; }
+.sp-status.ok { color: var(--good); }
+.sp-list { display: grid; gap: 6px; margin: 8px 0 14px; max-height: 55vh; overflow: auto; }
+.sp-row { display: flex; align-items: center; gap: 10px; padding: 6px 10px; border-radius: 12px; border: 2px solid var(--line); background: rgba(255, 255, 255, .04); color: var(--text); font: inherit; cursor: pointer; text-align: left; }
+.sp-row.on { border-color: #b388ff; background: rgba(106, 42, 150, .45); }
+.sp-check { font-size: 22px; }
+.sp-name small { color: var(--muted); }
+@media (max-width: 900px) { .lobby-qr { display: none; } }
