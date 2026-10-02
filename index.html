@@ -1,0 +1,548 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#070b16">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>멈춰버린 학교 : 비례식의 비밀</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css?v=5-2">
+  <link rel="stylesheet" href="css/mission.css?v=5-2">
+  <link rel="stylesheet" href="css/meeting.css?v=5-2">
+  <link rel="stylesheet" href="css/result.css?v=5-2">
+  <link rel="stylesheet" href="css/modes.css?v=5-2">
+</head>
+<body data-state="">
+
+  <!-- ═════════════ 메인 화면 ═════════════ -->
+  <section id="screen-title" class="screen">
+    <div class="title-bg">
+      <svg class="school-svg" viewBox="0 0 800 300" preserveAspectRatio="xMidYMax meet" aria-hidden="true">
+        <defs>
+          <linearGradient id="bld" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b2540"/><stop offset="1" stop-color="#0d1426"/></linearGradient>
+        </defs>
+        <rect x="90" y="120" width="620" height="180" fill="url(#bld)" stroke="#2c3b63" stroke-width="3"/>
+        <rect x="330" y="50" width="140" height="250" fill="url(#bld)" stroke="#2c3b63" stroke-width="3"/>
+        <circle cx="400" cy="100" r="30" fill="#0b1020" stroke="#4cc9f0" stroke-width="3"/>
+        <line x1="400" y1="100" x2="400" y2="80" stroke="#4cc9f0" stroke-width="3" stroke-linecap="round"/>
+        <line x1="400" y1="100" x2="414" y2="108" stroke="#4cc9f0" stroke-width="3" stroke-linecap="round"/>
+        <g fill="#131c33" stroke="#2c3b63" stroke-width="2">
+          <rect x="120" y="150" width="50" height="40"/><rect x="190" y="150" width="50" height="40"/><rect x="260" y="150" width="50" height="40"/>
+          <rect x="490" y="150" width="50" height="40"/><rect x="560" y="150" width="50" height="40"/><rect x="630" y="150" width="50" height="40"/>
+          <rect x="120" y="220" width="50" height="40"/><rect x="190" y="220" width="50" height="40"/><rect x="260" y="220" width="50" height="40"/>
+          <rect x="490" y="220" width="50" height="40"/><rect x="560" y="220" width="50" height="40"/><rect x="630" y="220" width="50" height="40"/>
+          <rect x="365" y="160" width="70" height="40"/>
+        </g>
+        <rect class="win-glow" x="190" y="220" width="50" height="40" fill="#f5c400"/>
+        <rect class="win-glow d2" x="560" y="150" width="50" height="40" fill="#4cc9f0"/>
+        <rect x="370" y="230" width="60" height="70" fill="#0b1020" stroke="#2c3b63" stroke-width="3"/>
+      </svg>
+    </div>
+
+    <div class="title-card">
+      <h1 class="game-title">멈춰버린 학교</h1>
+      <div class="game-sub">비례식의 비밀</div>
+
+      <label class="field">
+        <span>닉네임</span>
+        <input id="input-nick" maxlength="8" autocomplete="off" placeholder="8글자까지">
+      </label>
+
+      <label class="field">
+        <span>방 번호</span>
+        <input id="input-code" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" placeholder="선생님이 알려 준 4자리">
+      </label>
+      <div class="title-actions">
+        <button id="btn-join" class="btn primary big">방 참가하기</button>
+      </div>
+      <p id="title-invite" class="invite-hint"></p>
+      <p id="title-error" class="error-text" role="alert"></p>
+      <button id="btn-rejoin" class="btn rejoin-btn" style="display:none"></button>
+
+      <div class="title-links">
+        <button id="btn-howto" class="btn ghost">📖 게임 방법</button>
+        <button id="btn-teacher" class="btn ghost">🧑‍🏫 교사용</button>
+      </div>
+      <div id="mode-badge" class="mode-badge"></div>
+    </div>
+  </section>
+
+  <!-- ═════════════ 대기실 ═════════════ -->
+  <section id="screen-lobby" class="screen">
+    <div class="lobby-wrap">
+      <header class="lobby-head">
+        <div>
+          <div class="muted small">방 번호 (친구에게 알려 주세요)</div>
+          <button id="lobby-code" class="room-code" title="눌러서 복사">0000</button>
+        </div>
+        <!-- 초대 링크 · QR 코드 (교사 화면에만) -->
+        <div class="lobby-invite teacher-only">
+          <canvas id="lobby-qr" class="lobby-qr" title="눌러서 크게 보기"></canvas>
+          <div class="invite-btns">
+            <button id="btn-copy-code" class="btn small">📋 방 코드 복사</button>
+            <button id="btn-copy-invite" class="btn small">🔗 초대 링크 복사</button>
+            <button id="btn-show-qr" class="btn small">▦ QR 코드 보기</button>
+          </div>
+        </div>
+        <div id="lobby-mode" class="lobby-mode"></div>
+        <div class="lobby-side">
+          <div class="lobby-count" id="lobby-count">1 / 10명</div>
+          <div id="lobby-teacher" class="lobby-teacher"></div>
+        </div>
+        <button class="btn ghost btn-settings" title="환경설정">⚙</button>
+        <button id="btn-leave" class="btn ghost student-only">나가기</button>
+      </header>
+
+      <div class="lobby-grid">
+        <div class="panel">
+          <h2>참가자</h2>
+          <div id="lobby-players" class="player-grid"></div>
+          <p id="lobby-mycolor" class="lobby-mycolor"></p>
+          <div id="debug-lobby" class="debug-lobby">
+            <span>🐞 DEBUG</span>
+            <button id="btn-add-bot" class="btn small">봇 추가</button>
+            <button id="btn-remove-bots" class="btn small">봇 모두 빼기</button>
+          </div>
+        </div>
+        <div class="panel">
+          <h2 id="lobby-settings-title">이번 게임 설정</h2>
+          <div id="lobby-settings" class="settings-summary"></div>
+          <!-- 🕵️ 방해꾼 설정 (교사 화면 · 어몽어스에만 보임) -->
+          <div id="lobby-sabctl" class="sabctl" style="display:none">
+            <h3>🕵️ 방해꾼 설정 <small>(선생님 화면에만 보여요)</small></h3>
+            <div id="lobby-sabctl-body" class="settings"></div>
+          </div>
+        </div>
+      </div>
+
+      <footer class="lobby-foot">
+        <div class="teacher-tools teacher-only">
+          <button id="btn-room-settings" class="btn">⚙ 게임 설정</button>
+          <button id="btn-players" class="btn">👥 플레이어 관리</button>
+          <button id="btn-sabpick" class="btn" style="display:none">🕵️ 방해꾼 지정</button>
+          <button id="btn-last-results" class="btn" style="display:none">📊 지난 게임 학습 결과</button>
+          <button id="btn-close-room" class="btn danger">방 닫기</button>
+        </div>
+        <p id="start-hint" class="muted"></p>
+        <button id="btn-start" class="btn primary big teacher-only">게임 시작</button>
+      </footer>
+    </div>
+  </section>
+
+  <!-- ═════════════ 역할 공개 ═════════════ -->
+  <section id="screen-role" class="screen">
+    <div class="role-card">
+      <div id="role-mode" class="role-mode"></div>
+      <div class="role-label">당신의 역할은…</div>
+      <div id="role-icon" class="role-icon"></div>
+      <div id="role-name" class="role-name">학생</div>
+      <p id="role-desc" class="role-desc"></p>
+      <p id="role-mates" class="role-mates"></p>
+      <div class="role-bar"><div></div></div>
+    </div>
+  </section>
+
+  <!-- ═════════════ 스토리 ═════════════ -->
+  <section id="screen-story" class="screen">
+    <div class="story-card">
+      <div id="story-text" class="story-text"></div>
+      <button id="btn-story-ready" class="btn primary big story-btn">게임 시작</button>
+      <p id="story-wait" class="muted"></p>
+    </div>
+  </section>
+
+  <!-- ═════════════ 게임 화면 ═════════════ -->
+  <section id="screen-game" class="screen">
+    <canvas id="game-canvas"></canvas>
+
+    <div id="hud">
+      <div class="hud-tl panel-glass">
+        <div class="hud-title">나의 미션 <span id="hud-mission-count" class="mission-count"></span> <span id="hud-role" class="role-tag"></span></div>
+        <div id="hud-me" class="hud-me"></div>
+        <ul id="mission-list"></ul>
+      </div>
+
+      <div class="hud-tc">
+        <div id="hud-timer" class="hud-timer">12:00</div>
+        <div id="hud-place" class="hud-place"></div>
+      </div>
+
+      <div class="hud-tr panel-glass">
+        <div class="repair-label">학교 복구율</div>
+        <div class="repair-bar"><div id="repair-fill"></div></div>
+        <div id="repair-pct" class="repair-pct">0%</div>
+      </div>
+      <button id="btn-fullscreen" class="fs-btn" title="전체 화면">⛶</button>
+      <button id="btn-settings" class="fs-btn st-btn btn-settings" title="환경설정 (ESC)">⚙</button>
+
+      <div id="joystick-zone"></div>
+      <div id="joystick-base"><div id="joystick-knob"></div></div>
+
+      <!-- 모드·역할에 따라 필요한 버튼만 보입니다 (ui.js setHudButtons) -->
+      <div class="hud-br" id="action-buttons">
+        <button id="btn-map" class="act" data-action="map"><b>🗺</b><span>지도<kbd>M</kbd></span></button>
+        <button id="btn-report" class="act disabled" data-action="report"><b>📢</b><span><em id="report-label">신고</em><kbd>R</kbd></span></button>
+        <button id="btn-rescue" class="act disabled rescue" data-action="rescue" data-hold style="display:none"><b>🔔</b><span>땡<kbd>R</kbd></span></button>
+        <button id="btn-sabotage" class="act sab" data-action="sabotage" style="display:none"><b>⚡</b><span>방해<kbd>F</kbd></span></button>
+        <button id="btn-mission" class="act big disabled" data-action="mission"><b>🔧</b><span>미션<kbd>E</kbd></span></button>
+        <button id="btn-catch" class="act catch disabled" data-action="catch" style="display:none"><b>✋</b><span><em id="catch-label">잡기</em><kbd>Q</kbd></span></button>
+      </div>
+
+      <!-- (어몽어스) 방해꾼이 [방해]를 누르면 열리는 버튼 -->
+      <div id="ability-bar" class="ability-bar" style="display:none">
+        <button class="ab" data-ability="blackout"><b>⚡</b><span>정전</span><kbd>1</kbd><span class="cd"></span></button>
+        <button class="ab" data-ability="lockDoor"><b>🔒</b><span>문 잠금</span><kbd>2</kbd><span class="cd"></span></button>
+        <button class="ab" data-ability="disguise"><b>🎭</b><span>위장</span><kbd>3</kbd><span class="cd"></span></button>
+      </div>
+      <div id="door-picker" class="door-picker">
+        <h4>🔒 잠글 교실 고르기 <button id="door-picker-close" class="btn small" type="button">닫기</button></h4>
+        <div id="door-picker-list" class="door-picker-list"></div>
+      </div>
+
+      <div id="status-banner" class="status-banner"></div>
+      <div id="frozen-screen" class="frozen-screen"></div>
+
+      <div id="key-hint" class="key-hint">WASD / 방향키로 이동 · E 미션 · M 지도 · ESC 설정</div>
+      <div id="countdown" class="countdown" style="display:none"></div>
+    </div>
+
+    <!-- 미션 공통 화면 -->
+    <div id="mission-overlay" class="mission-overlay">
+      <div id="mission-card" class="mission-card">
+        <header class="m-head">
+          <div id="m-place" class="m-place"></div>
+          <div id="m-title" class="m-title"></div>
+          <div id="m-timer" class="m-timer"></div>
+        </header>
+        <div class="m-body">
+          <div class="m-game-wrap">
+            <div id="m-game"></div>
+            <div id="m-lock" class="m-lock"></div>
+          </div>
+          <div class="m-side">
+            <div id="m-question" class="m-question"></div>
+            <div id="m-feedback" class="m-feedback" role="status"></div>
+          </div>
+        </div>
+        <footer class="m-foot">
+          <button id="m-exit" class="btn ghost">미션 나가기</button>
+          <button id="m-debug" class="btn small">🐞 정답 넣기</button>
+          <button id="m-ok" class="btn primary big">확인</button>
+        </footer>
+        <div id="m-success" class="m-success">
+          <div class="m-check">✓</div>
+          <div class="m-success-text">미션 완료!</div>
+          <div class="m-success-sub"></div>
+          <div class="m-plus">+MISSION</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 긴급회의 · 투표 -->
+    <div id="meeting-overlay" class="meeting-overlay">
+      <div class="meeting-card">
+        <div class="mt-top">
+          <div id="mt-title" class="mt-title"></div>
+          <div class="mt-clock"><div id="mt-phase" class="mt-phase"></div><div id="mt-timer" class="mt-timer"></div></div>
+        </div>
+        <div id="mt-guide" class="mt-guide"></div>
+        <div id="mt-cards" class="mt-cards"></div>
+        <div class="mt-bottom"><button id="mt-skip" class="btn big" type="button">건너뛰기</button></div>
+        <div id="mt-result" class="mt-result" style="display:none"></div>
+      </div>
+    </div>
+
+    <!-- 학교 지도 (M) -->
+    <div id="minimap-overlay" class="minimap-overlay">
+      <div class="minimap-card">
+        <h3>🗺 학교 지도 <small>● 나 · ! 내 미션 · ✓ 완료 · ❄ 얼어 있는 친구(얼음땡) — 아무 곳이나 누르면 닫혀요</small></h3>
+        <canvas id="minimap-canvas"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═════════════ 게임 종료 ═════════════ -->
+  <section id="screen-gameover" class="screen">
+    <canvas id="ending-canvas" class="ending-canvas"></canvas>
+    <div class="go-card">
+      <div id="go-sub" class="go-sub"></div>
+      <h1 id="go-title" class="go-title"></h1>
+      <p id="go-reason" class="go-reason"></p>
+      <div id="go-label" class="go-label">방해꾼은…</div>
+      <div id="go-saboteurs" class="go-saboteurs"></div>
+      <p id="go-me" class="go-me"></p>
+      <div class="go-actions">
+        <button id="btn-go-result" class="btn primary big">📒 나의 수학 기록 보기 <span id="go-auto"></span></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═════════════ 나의 수학 기록 ═════════════ -->
+  <section id="screen-result" class="screen">
+    <div class="rs-wrap">
+      <header class="rs-head">
+        <h1>📒 나의 수학 기록</h1>
+        <div id="rs-winner" class="rs-winner"></div>
+      </header>
+      <div id="rs-tiles" class="rs-tiles"></div>
+      <p id="rs-sub" class="rs-sub"></p>
+      <div class="rs-row">
+        <div class="panel rs-panel">
+          <h2>유형별 정답률</h2>
+          <div id="rs-cats" class="rs-cats"></div>
+          <div class="rs-hard-box">가장 어려웠던 유형: <b id="rs-hard"></b></div>
+        </div>
+        <div class="panel rs-panel">
+          <h2>💬 한마디</h2>
+          <ul id="rs-feedback" class="rs-feedback"></ul>
+        </div>
+      </div>
+      <details class="panel rs-review-box">
+        <summary>🔍 틀린 문제 다시 보기 (정답과 풀이)</summary>
+        <div id="rs-review" class="rs-review"></div>
+      </details>
+      <footer class="rs-foot">
+        <button id="btn-teacher-results" class="btn">🧑‍🏫 전체 학습 결과</button>
+        <button id="btn-go-lobby" class="btn primary big">대기방으로 (다시 하기)</button>
+        <p id="go-wait" class="muted">선생님이 다음 게임을 준비할 때까지 기다려 주세요.</p>
+        <button id="btn-go-leave" class="btn ghost">나가기</button>
+      </footer>
+    </div>
+  </section>
+
+  <!-- ═════════════ 다음 게임 기다리기 (게임 중 대기방으로 나간 학생) ═════════════ -->
+  <section id="screen-waiting" class="screen">
+    <div class="wait-card">
+      <div class="wait-icon">⏳</div>
+      <h2>다음 게임을 기다리는 중</h2>
+      <p id="wait-status" class="muted"></p>
+      <p>선생님이 다음 게임을 시작하면 자동으로 참가해요.</p>
+      <div class="wait-actions">
+        <button class="btn ghost btn-settings">⚙ 환경설정</button>
+        <button id="btn-wait-leave" class="btn ghost">메인 화면으로 나가기</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═════════════ 교사 관전 화면 (게임 중) ═════════════ -->
+  <section id="screen-teacher" class="screen">
+    <div class="tv-wrap">
+      <header class="tv-head">
+        <div class="tv-code">방 <b id="tv-code"></b></div>
+        <div id="tv-mode" class="tv-mode"></div>
+        <div id="tv-phase" class="tv-phase"></div>
+        <div id="tv-timer" class="hud-timer tv-timer">00:00</div>
+        <div class="tv-repair">
+          <div class="repair-label">학교 복구율 <b id="tv-repair-pct">0%</b></div>
+          <div class="repair-bar"><div id="tv-repair-fill"></div></div>
+        </div>
+        <div class="tv-btns">
+          <button id="tv-pos" class="btn small">👁 위치 보기</button>
+          <button id="tv-roles" class="btn small">🎭 역할 보기</button>
+          <button class="btn small btn-settings" title="환경설정">⚙</button>
+          <button id="tv-end" class="btn small danger">⏹ 게임 강제 종료</button>
+        </div>
+      </header>
+      <div class="tv-body">
+        <div class="tv-map-wrap"><canvas id="tv-map"></canvas><div id="tv-note" class="tv-note"></div></div>
+        <aside class="tv-side panel"><h3>학생 상태</h3><div id="tv-players"></div></aside>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═════════════ 게임 방법 ═════════════ -->
+  <div id="modal-howto" class="modal">
+    <div class="modal-card">
+      <h2>📖 게임 방법</h2>
+      <ol class="howto">
+        <li><b>밤이 된 학교</b>에 정전이 일어났어요. 학교 곳곳의 장치를 고쳐야 해요.</li>
+        <li>장치 앞에서 <b>비례식·비례배분</b> 문제를 풀면 <b>학교 복구율</b>이 올라가요. 100%가 되면 <b>학생팀 승리</b>!</li>
+        <li>게임 중에는 이름이 보이지 않아요. <b>캐릭터 색</b>과 행동으로 친구를 구별해요.</li>
+      </ol>
+      <h3>❄️ 얼음땡 모드</h3>
+      <ul class="howto">
+        <li><b>술래</b>(머리 위 「술래」 표시)가 가까이 와서 <b>[잡기]</b>를 하면 얼음! 움직이거나 미션을 할 수 없어요.</li>
+        <li>얼어 있는 친구 옆에서 <b>[땡]</b>을 1초쯤 누르고 있으면 친구가 풀려요. 풀린 친구는 잠깐 보호받아요 🛡</li>
+        <li><b>술래 승리</b>: 모든 학생이 동시에 얼거나, 시간이 끝날 때까지 복구율이 100%가 안 될 때</li>
+      </ul>
+      <h3>🕵️ 어몽어스 모드</h3>
+      <ul class="howto">
+        <li>우리 가운데 <b>방해꾼</b>이 숨어 있어요. 방해꾼은 <b>[얼리기]</b>로 학생을 얼리고, 정전·문 잠금·위장으로 방해해요.</li>
+        <li>얼려진 학생은 <b>유령</b>이 되어 벽을 통과하고 미션을 계속할 수 있어요. (회의·투표·신고는 못 해요)</li>
+        <li>얼음 흔적을 보면 <b>[신고]</b>, 수상하면 중앙 복도의 <b>긴급회의</b> 버튼 → 토론 → 투표!</li>
+        <li><b>학생팀 승리</b>: 복구율 100% 또는 방해꾼 모두 찾기 · <b>방해꾼 승리</b>: 남은 학생 수 = 방해꾼 수, 또는 시간 종료</li>
+      </ul>
+      <div class="howto-keys">
+        <div><b>컴퓨터</b> 이동 WASD·방향키 · 미션 E · 신고/땡 R · 잡기/얼리기 Q · 방해 F · 지도 M · 환경설정 ESC</div>
+        <div><b>태블릿</b> 왼쪽 화면을 눌러 조이스틱으로 이동 · 오른쪽 버튼 사용 · 오른쪽 위 ⚙ 환경설정</div>
+      </div>
+      <button class="btn primary" data-close="modal-howto">알겠어요!</button>
+    </div>
+  </div>
+
+  <!-- ═════════════ 교사용: PIN → 방 만들기 ═════════════ -->
+  <div id="modal-teacher" class="modal">
+    <div class="modal-card wide">
+      <div id="teacher-pin-step">
+        <h2>🧑‍🏫 교사용</h2>
+        <p class="muted small">방은 선생님만 만들 수 있어요. 교사 PIN 을 입력하세요.</p>
+        <div class="pin-row">
+          <input id="teacher-pin" type="password" inputmode="numeric" autocomplete="off" maxlength="12" placeholder="교사 PIN">
+          <button id="teacher-pin-ok" class="btn primary">확인</button>
+        </div>
+        <p id="teacher-error" class="error-text" role="alert"></p>
+        <button class="btn ghost" data-close="modal-teacher">닫기</button>
+      </div>
+      <div id="teacher-create-step" style="display:none">
+        <h2>🧑‍🏫 방 만들기</h2>
+        <p class="muted small">게임 모드와 설정을 고르고 [방 만들기]를 누르세요. 고른 값은 다음에도 기억돼요. (방을 만든 뒤에도 대기방의 [게임 설정]에서 바꿀 수 있어요)</p>
+        <div id="teacher-settings" class="settings"></div>
+        <p id="teacher-create-error" class="error-text" role="alert"></p>
+        <div class="modal-actions">
+          <button class="btn ghost" data-close="modal-teacher">닫기</button>
+          <button id="btn-teacher-create" class="btn primary big">방 만들기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═════════════ 대기방: 게임 설정 (교사) ═════════════ -->
+  <div id="modal-room-settings" class="modal">
+    <div class="modal-card wide">
+      <h2>⚙ 게임 설정</h2>
+      <div id="room-settings" class="settings"></div>
+      <button class="btn primary" data-close="modal-room-settings">확인</button>
+    </div>
+  </div>
+
+  <!-- ═════════════ 대기방: 플레이어 관리 (교사) ═════════════ -->
+  <div id="modal-players" class="modal">
+    <div class="modal-card">
+      <h2>👥 플레이어 관리</h2>
+      <p class="muted small">캐릭터 색은 자동으로 정해져요. [내보내기]를 두 번 누르면 그 학생이 방에서 나가요.</p>
+      <div id="pm-list" class="pm-list"></div>
+      <div id="pm-sab" class="sabctl" style="display:none">
+        <h3>🕵️ 방해꾼 설정</h3>
+        <div id="pm-sab-body" class="settings"></div>
+      </div>
+      <button class="btn primary" data-close="modal-players">닫기</button>
+    </div>
+  </div>
+
+  <!-- ═════════════ 대기방: 방해꾼 직접 지정 (교사 · 어몽어스) ═════════════ -->
+  <div id="modal-sabpick" class="modal">
+    <div class="modal-card">
+      <h2>🕵️ 방해꾼 지정</h2>
+      <p class="muted small">방해꾼으로 정할 학생을 누르세요. 여기서 고른 내용은 <b>선생님 화면에만</b> 있고 학생에게는 전달되지 않아요. 게임이 시작될 때 고른 학생에게만 방해꾼 역할이 주어져요.</p>
+      <div id="sp-body" class="settings"></div>
+      <button class="btn primary" data-close="modal-sabpick">확인</button>
+    </div>
+  </div>
+
+  <!-- ═════════════ 초대 QR 코드 (교사) ═════════════ -->
+  <div id="modal-qr" class="modal">
+    <div class="modal-card qr-card">
+      <h2>📱 QR 코드로 들어오기</h2>
+      <p class="muted small">태블릿·스마트폰 카메라로 찍으면 게임이 열리고 방 번호가 자동으로 입력돼요.</p>
+      <div class="qr-code-no">방 번호 <b id="qr-code"></b></div>
+      <canvas id="qr-big" class="qr-big"></canvas>
+      <p id="qr-fail" class="error-text" style="display:none">QR 코드를 만들지 못했어요. 아래 주소를 알려 주세요.</p>
+      <input id="qr-url" class="qr-url" readonly>
+      <div class="modal-actions">
+        <button id="qr-copy" class="btn">🔗 초대 링크 복사</button>
+        <button class="btn primary" data-close="modal-qr">닫기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═════════════ ⚙ 환경설정 ═════════════ -->
+  <div id="modal-settings" class="modal settings-modal">
+    <div class="modal-card">
+      <h2>⚙ 환경설정</h2>
+      <div class="vol-row"><label for="vol-master">전체 음량</label><input id="vol-master" type="range" min="0" max="100" step="1"><output id="vol-master-v">80</output></div>
+      <div class="vol-row"><label for="vol-bgm">배경음악 음량</label><input id="vol-bgm" type="range" min="0" max="100" step="1"><output id="vol-bgm-v">35</output></div>
+      <div class="vol-row"><label for="vol-sfx">효과음 음량</label><input id="vol-sfx" type="range" min="0" max="100" step="1"><output id="vol-sfx-v">80</output></div>
+      <div class="toggle-row">
+        <button id="tg-bgm" class="chip on" type="button">🎵 배경음악 켜짐</button>
+        <button id="tg-sfx" class="chip on" type="button">🔊 효과음 켜짐</button>
+      </div>
+      <details class="st-controls"><summary>🎮 조작 방법</summary><div id="st-controls-body"></div></details>
+      <div class="st-actions">
+        <button id="st-fullscreen" class="btn" type="button">⛶ 전체화면</button>
+        <button id="st-leave" class="btn danger" type="button">🚪 대기방으로 나가기</button>
+        <button id="st-back" class="btn primary" type="button">게임으로 돌아가기</button>
+      </div>
+    </div>
+  </div>
+  <div id="modal-confirm-leave" class="modal confirm-modal">
+    <div class="modal-card small-card">
+      <p class="confirm-text">게임을 나가고 대기방으로 돌아갈까요?</p>
+      <div class="modal-actions">
+        <button id="cf-cancel" class="btn" type="button">취소</button>
+        <button id="cf-leave" class="btn danger" type="button">대기방으로 나가기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═════════════ 교사용 전체 학습 결과 ═════════════ -->
+  <div id="modal-results" class="modal">
+    <div class="modal-card wide results-card">
+      <h2>🧑‍🏫 전체 학습 결과</h2>
+      <p id="tr-summary" class="tr-summary"></p>
+      <div class="tr-scroll">
+        <table class="tr-table">
+          <thead>
+            <tr><th>닉네임</th><th>비례식<br><small>한 번에 정답/문제</small></th><th>비례배분<br><small>한 번에 정답/문제</small></th><th>정답률<br><small>한 번에</small></th><th>해결<br><small>해결/전체</small></th><th>평균<br>풀이 시간</th><th>오답이 많았던 유형</th></tr>
+          </thead>
+          <tbody id="tr-body"></tbody>
+        </table>
+      </div>
+      <div class="tr-actions">
+        <button id="btn-csv-summary" class="btn">⬇ 학생별 요약 CSV</button>
+        <button id="btn-csv-records" class="btn">⬇ 문제별 기록 CSV</button>
+        <button class="btn primary" data-close="modal-results">닫기</button>
+        <button id="btn-tr-lobby" class="btn primary" style="display:none">대기방으로 (다시 하기)</button>
+      </div>
+      <p class="muted small">CSV 파일은 엑셀에서 바로 열 수 있어요. 대기방으로 돌아가도 다음 게임을 시작하기 전까지는 이 결과가 남아 있어요.</p>
+    </div>
+  </div>
+
+  <div id="rotate-hint" class="rotate-hint">📱↻<br>태블릿을 <b>가로</b>로 돌려 주세요</div>
+  <div id="toast" class="toast"></div>
+
+  <!-- Firebase (온라인 모드용 · 인터넷이 없으면 자동으로 '이 컴퓨터 안' 모드) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+
+  <!-- 게임 파일 (순서 중요) · ?v= 는 새 버전을 올렸을 때 브라우저가 옛 파일을 쓰지 않게 하는 표시 -->
+  <script src="js/config.js?v=5-2"></script>
+  <script src="js/firebase-config.js?v=5-2"></script>
+  <script src="js/utils.js?v=5-2"></script>
+  <script src="js/questions.js?v=5-2"></script>
+  <script src="js/audio.js?v=5-2"></script>
+  <script src="js/sound.js?v=5-2"></script>
+  <script src="js/state.js?v=5-2"></script>
+  <script src="js/network.js?v=5-2"></script>
+  <script src="js/input.js?v=5-2"></script>
+  <script src="js/map.js?v=5-2"></script>
+  <script src="js/player.js?v=5-2"></script>
+  <script src="js/roles.js?v=5-2"></script>
+  <script src="js/playerState.js?v=5-2"></script>
+  <script src="js/renderer.js?v=5-2"></script>
+  <script src="js/ui.js?v=5-2"></script>
+  <script src="js/mission.js?v=5-2"></script>
+  <script src="js/minigames.js?v=5-2"></script>
+  <script src="js/abilities.js?v=5-2"></script>
+  <script src="js/meeting.js?v=5-2"></script>
+  <script src="js/modes.js?v=5-2"></script>
+  <script src="js/analytics.js?v=5-2"></script>
+  <script src="js/qr.js?v=5-2"></script>
+  <script src="js/teacher.js?v=5-2"></script>
+  <script src="js/settingsMenu.js?v=5-2"></script>
+  <script src="js/debug.js?v=5-2"></script>
+  <script src="js/game.js?v=5-2"></script>
+</body>
+</html>
